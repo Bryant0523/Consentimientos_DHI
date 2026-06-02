@@ -17,6 +17,9 @@ const state = {
 document.addEventListener('DOMContentLoaded', async () => {
   setupCombos();          // registra eventos (los items se leen en tiempo real desde state)
   setupSummaryUpdates();
+
+  await cargarCategorias();
+
   updateFecha();
   setInterval(updateFecha, 60000);
   await loadAll();        // carga datos → state ya está listo cuando el usuario empiece a tipear
@@ -115,11 +118,81 @@ function getComboItems(type) {
   if (type === 'enf')   return state.enfermeros;    // {nombre, cedula}[]
   return [];
 }
+let plantillasPorCategoria = {};
+
+async function cargarCategorias() {
+    try {
+
+        const response = await fetch('/api/plantillas');
+
+        if (!response.ok) {
+            throw new Error('No se pudieron cargar las plantillas');
+        }
+
+        plantillasPorCategoria = await response.json();
+
+        const categoriaSelect =
+            document.getElementById('categoriaSelect');
+
+        const plantillaSelect =
+            document.getElementById('plantillaSelect');
+
+        // Limpiar categorías
+        categoriaSelect.innerHTML =
+            '<option value="">Seleccione una categoría</option>';
+
+        // Limpiar plantillas
+        if (plantillaSelect) {
+            plantillaSelect.innerHTML =
+                '<option value="">Seleccione una plantilla</option>';
+        }
+
+        // Agregar categorías
+        Object.keys(plantillasPorCategoria)
+            .sort()
+            .forEach(categoria => {
+
+                const option =
+                    document.createElement('option');
+
+                option.value = categoria;
+                option.textContent = categoria;
+
+                categoriaSelect.appendChild(option);
+            });
+
+        // Cuando cambie la categoría
+        categoriaSelect.addEventListener('change', function () {
+
+            const categoria = this.value;
+
+            plantillaSelect.innerHTML =
+                '<option value="">Seleccione una plantilla</option>';
+
+            if (!categoria) return;
+
+            const plantillas =
+                plantillasPorCategoria[categoria] || [];
+
+            plantillas.forEach(nombre => {
+
+                const option =
+                    document.createElement('option');
+
+                option.value = nombre;
+                option.textContent = nombre;
+
+                plantillaSelect.appendChild(option);
+            });
+        });
+
+    } catch (error) {
+        console.error('Error cargando categorías:', error);
+    }
+}
 
 function setupCombos() {
-  bindCombo('procedimientoInput', 'procDropdown', 'proc', val => {
-    updateSummary();
-  });
+  
   bindCombo('medicoInput', 'medicoDropdown', 'med', item => {
     document.getElementById('medicoSelected').value = typeof item === 'string' ? item : item.nombre;
     updateSummary();
@@ -131,7 +204,7 @@ function setupCombos() {
 
   // Reposicionar dropdowns visibles al hacer scroll o resize
   const allDrops = [
-    { input: 'procedimientoInput', drop: 'procDropdown' },
+    
     { input: 'medicoInput',        drop: 'medicoDropdown' },
     { input: 'enfermeroInput',     drop: 'enfermeroDropdown' },
   ];
@@ -226,8 +299,9 @@ function refreshCombos() {
 
 // ─── Summary ─────────────────────────────────────
 function setupSummaryUpdates() {
-  ['procedimientoInput','medicoInput','enfermeroInput','pacienteNombre'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', updateSummary);
+  ['plantillaSelect','medicoInput','enfermeroInput','pacienteNombre'].forEach(id => {
+    document.getElementById('plantillaSelect')
+    ?.addEventListener('change', updateSummary);
   });
 }
 
@@ -237,7 +311,7 @@ function updateFecha() {
 }
 
 function updateSummary() {
-  document.getElementById('sumProc').textContent = document.getElementById('procedimientoInput')?.value || '—';
+  document.getElementById('sumProc').textContent = document.getElementById('plantillaSelect')?.value   || '—';
   document.getElementById('sumPac').textContent  = document.getElementById('pacienteNombre')?.value    || '—';
   document.getElementById('sumMed').textContent  = document.getElementById('medicoInput')?.value       || '—';
   document.getElementById('sumEnf').textContent  = document.getElementById('enfermeroInput')?.value    || '—';
@@ -305,7 +379,11 @@ async function handleModalFirma(input) {
 async function generarConsentimiento() {
   const btn = document.getElementById('btnGenerar');
 
-  const procedimiento = document.getElementById('procedimientoInput').value.trim();
+  const procedimiento = document.getElementById('plantillaSelect').value;
+  if (!procedimiento) {
+    showToast('Seleccione una plantilla', 'error');
+    return;
+}
   const paciente      = document.getElementById('pacienteNombre').value.trim();
   const cedula        = document.getElementById('pacienteCedula').value.trim();
 

@@ -223,17 +223,35 @@ def get_firma_img(filename):
 # ─── Plantillas ──────────────────────────────────────────────────────────────
 @app.route("/api/plantillas", methods=["GET"])
 def api_plantillas():
-    # Buscar en la carpeta principal y subcarpetas
-    files = []
-    for ext in ("*.docx", "*.DOCX"):
-        for f in TEMPLATES_DIR.glob(ext):
-            files.append(f.stem)
-        for f in TEMPLATES_DIR.glob(f"**/{ext}"):
-            files.append(f.stem)
-    # Eliminar duplicados y ordenar
-    files = sorted(set(files))
-    return jsonify(files)
 
+    categorias = {}
+
+    for categoria_dir in TEMPLATES_DIR.iterdir():
+
+        if not categoria_dir.is_dir():
+            continue
+
+        plantillas = []
+
+        for archivo in categoria_dir.glob("*.docx"):
+            plantillas.append(archivo.stem)
+
+        categorias[categoria_dir.name] = sorted(plantillas)
+
+    return jsonify(categorias)
+
+@app.route("/api/plantillas-debug")
+def api_plantillas_debug():
+    info = {
+        "templates_dir": str(TEMPLATES_DIR),
+        "exists": TEMPLATES_DIR.exists(),
+        "all_files": [str(f.relative_to(TEMPLATES_DIR))
+                     for f in TEMPLATES_DIR.rglob("*")
+                     if f.is_file()],
+        "docx_files": [str(f.relative_to(TEMPLATES_DIR))
+                      for f in TEMPLATES_DIR.rglob("*.docx")]
+    }
+    return jsonify(info)
 @app.route("/api/pdf-status", methods=["GET"])
 def api_pdf_status():
     """Diagnóstico: qué conversores de PDF están disponibles"""
