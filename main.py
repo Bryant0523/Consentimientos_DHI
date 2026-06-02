@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
 from werkzeug.utils import secure_filename
+import signal
+
 
 # ─── Rutas base ─────────────────────────────────────────────────────────────
 if getattr(sys, 'frozen', False):
@@ -564,7 +566,17 @@ def _generar_pdf_simple(docx_path, pdf_path, ctx):
     story.append(Paragraph("Firma del profesional:", body_style))
 
     doc.build(story)
+@app.route('/api/salir', methods=['POST'])
+def api_salir():
 
+    def cerrar():
+        os._exit(0)
+
+    threading.Timer(1, cerrar).start()
+
+    return jsonify({
+        "ok": True
+    })
 # ─── Historial API ───────────────────────────────────────────────────────────
 @app.route("/api/historial", methods=["GET"])
 def api_historial():

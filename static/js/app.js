@@ -66,7 +66,34 @@ async function loadAll() {
     toast('Error de carga', e.message, 'error');
   }
 }
+async function cerrarAplicacion() {
 
+    if (!confirm('¿Desea cerrar el sistema?')) {
+        return;
+    }
+
+    try {
+
+        const r = await fetch('/api/salir', {
+            method: 'POST'
+        });
+
+        const data = await r.json();
+
+        if (data.ok) {
+
+            // Si es navegador normal
+            window.close();
+
+            // Si más adelante usas Electron:
+            // window.electronAPI.closeApp();
+
+        }
+
+    } catch (e) {
+        console.error(e);
+    }
+}
 // ─── API helper ──────────────────────────────────
 async function api(url, method='GET', body=null) {
   const opts = { method, headers: {} };
