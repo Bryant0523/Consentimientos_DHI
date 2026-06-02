@@ -1,0 +1,9 @@
+{
+    "output_folder": "C:/Users/DHISO/Downloads",
+    "admin_password": "admin",
+    "start_fullscreen": false,
+    "signature_reuse_days": 1,
+    "export_pdf": true,
+    "export_docx": true,
+    "appearance": "light"
+}

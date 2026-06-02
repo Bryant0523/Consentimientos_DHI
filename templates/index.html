@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overtrack — Consentimientos Médicos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="3" y="3" width="26" height="26" rx="6" fill="var(--accent)"/>
+        <path d="M16 9v14M9 16h14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">Consentimientos DHI</span>
+      <span class="brand-sub">Software</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item active" data-tab="inicio">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+      <span>Inicio</span>
+    </a>
+    <a href="#" class="nav-item" data-tab="personal">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+      <span>Personal</span>
+    </a>
+    <a href="#" class="nav-item" data-tab="historial">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+      <span>Historial</span>
+    </a>
+    <a href="#" class="nav-item" data-tab="ajustes">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+      <span>Ajustes</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="version-badge">v2.4</div>
+  </div>
+</aside>
+
+<!-- ══ MAIN CONTENT ══════════════════════════════════════════════════════════ -->
+<main class="main-content">
+
+  <!-- HEADER -->
+  <header class="topbar">
+    <button class="menu-toggle" onclick="toggleSidebar()">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+    </button>
+    <h1 class="page-title" id="pageTitle">Nuevo Consentimiento</h1>
+    <div class="topbar-actions">
+      <div class="status-dot" id="statusDot" title="Sistema activo"></div>
+    </div>
+  </header>
+
+  <!-- ══ TAB: INICIO ══════════════════════════════════════════════════════ -->
+  <section class="tab-content active" id="tab-inicio">
+    <div class="form-layout">
+
+      <!-- COLUMNA IZQUIERDA -->
+      <div class="form-col">
+
+        <!-- CARD: Procedimiento -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">📋</span>
+            <h2>Procedimiento</h2>
+          </div>
+          <div class="card-body">
+            <div class="field-group">
+              <label class="field-label">Plantilla de procedimiento <span class="req">*</span></label>
+              <div class="combo-wrap">
+                <input type="text" id="procedimientoInput" class="field-input" placeholder="Buscar o escribir procedimiento..." autocomplete="off">
+                <div class="dropdown-list hidden" id="procDropdown"></div>
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Médico tratante <span class="req">*</span></label>
+              <div class="combo-wrap">
+                <input type="text" id="medicoInput" class="field-input" placeholder="Seleccionar médico..." autocomplete="off">
+                <div class="dropdown-list hidden" id="medicoDropdown"></div>
+              </div>
+              <input type="hidden" id="medicoSelected">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Enfermero(a)</label>
+              <div class="combo-wrap">
+                <input type="text" id="enfermeroInput" class="field-input" placeholder="Seleccionar enfermero(a)..." autocomplete="off">
+                <div class="dropdown-list hidden" id="enfermeroDropdown"></div>
+              </div>
+              <input type="hidden" id="enfermeroSelected">
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD: Paciente -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">👤</span>
+            <h2>Datos del Paciente</h2>
+          </div>
+          <div class="card-body">
+            <div class="field-row-2">
+              <div class="field-group">
+                <label class="field-label">Nombre completo <span class="req">*</span></label>
+                <input type="text" id="pacienteNombre" class="field-input" placeholder="Nombre del paciente">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Cédula <span class="req">*</span></label>
+                <input type="text" id="pacienteCedula" class="field-input" placeholder="Número de cédula">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Lugar de expedición</label>
+              <input type="text" id="pacienteLugar" class="field-input" placeholder="ej. Barranquilla">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Firma del paciente</label>
+              <div class="firma-upload-area" id="firmaPacienteArea" onclick="triggerFirmaUpload('paciente')">
+                <input type="file" id="firmaPacienteFile" accept="image/*" style="display:none" onchange="handleFirmaUpload('paciente', this)">
+                <div class="firma-placeholder" id="firmaPacientePlaceholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>Clic para cargar firma</span>
+                </div>
+                <img id="firmaPacientePreview" class="firma-preview hidden" alt="Firma paciente">
+              </div>
+              <input type="hidden" id="firmaPacienteFilename">
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD: Menor de edad (collapsible) -->
+        <div class="card">
+          <div class="card-header toggle-header" onclick="toggleMenor()">
+            <span class="card-icon">👶</span>
+            <h2>Paciente Menor de Edad</h2>
+            <div class="toggle-switch" id="menorToggle">
+              <div class="toggle-knob"></div>
+            </div>
+          </div>
+          <div class="card-body collapsed" id="menorSection">
+            <div class="field-row-2">
+              <div class="field-group">
+                <label class="field-label">Nombre del menor</label>
+                <input type="text" id="menorNombre" class="field-input" placeholder="Nombre completo">
+              </div>
+              <div class="field-group">
+                <label class="field-label">T.I / Registro civil</label>
+                <input type="text" id="menorCedula" class="field-input" placeholder="Número">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Lugar de expedición</label>
+              <input type="text" id="menorLugar" class="field-input" placeholder="Ciudad">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Firma del menor</label>
+              <div class="firma-upload-area" onclick="triggerFirmaUpload('menor')">
+                <input type="file" id="firmaMenorFile" accept="image/*" style="display:none" onchange="handleFirmaUpload('menor', this)">
+                <div class="firma-placeholder" id="firmaMenorPlaceholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>Clic para cargar firma</span>
+                </div>
+                <img id="firmaMenorPreview" class="firma-preview hidden" alt="Firma menor">
+              </div>
+              <input type="hidden" id="firmaMenorFilename">
+            </div>
+
+            <div class="section-divider">Datos del Acudiente</div>
+
+            <div class="field-row-2">
+              <div class="field-group">
+                <label class="field-label">Nombre del acudiente</label>
+                <input type="text" id="acudienteNombre" class="field-input" placeholder="Nombre completo">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Cédula del acudiente</label>
+                <input type="text" id="acudienteCedula" class="field-input" placeholder="Número">
+              </div>
+            </div>
+            <div class="field-row-2">
+              <div class="field-group">
+                <label class="field-label">Parentesco</label>
+                <input type="text" id="acudienteParentesco" class="field-input" placeholder="ej. Madre, Padre">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Lugar expedición</label>
+                <input type="text" id="acudienteLugar" class="field-input" placeholder="Ciudad">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Firma del acudiente</label>
+              <div class="firma-upload-area" onclick="triggerFirmaUpload('acudiente')">
+                <input type="file" id="firmaAcudienteFile" accept="image/*" style="display:none" onchange="handleFirmaUpload('acudiente', this)">
+                <div class="firma-placeholder" id="firmaAcudientePlaceholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>Clic para cargar firma</span>
+                </div>
+                <img id="firmaAcudientePreview" class="firma-preview hidden" alt="Firma acudiente">
+              </div>
+              <input type="hidden" id="firmaAcudienteFilename">
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /form-col -->
+
+      <!-- COLUMNA DERECHA: Preview + Acciones -->
+      <div class="form-col form-col-right">
+
+        <div class="card sticky-card">
+          <div class="card-header">
+            <span class="card-icon">✅</span>
+            <h2>Resumen y Generar</h2>
+          </div>
+          <div class="card-body">
+            <div class="summary-box" id="summaryBox">
+              <div class="summary-row">
+                <span class="sum-label">Procedimiento</span>
+                <span class="sum-val" id="sumProc">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="sum-label">Paciente</span>
+                <span class="sum-val" id="sumPac">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="sum-label">Médico</span>
+                <span class="sum-val" id="sumMed">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="sum-label">Enfermero(a)</span>
+                <span class="sum-val" id="sumEnf">—</span>
+              </div>
+              <div class="summary-row">
+                <span class="sum-label">Fecha</span>
+                <span class="sum-val" id="sumFecha">—</span>
+              </div>
+            </div>
+
+            <div class="export-options">
+              <label class="check-item">
+                <input type="checkbox" id="exportPdf" checked>
+                <span class="checkmark"></span>
+                <span>Exportar PDF</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" id="exportDocx" checked>
+                <span class="checkmark"></span>
+                <span>Exportar DOCX</span>
+              </label>
+            </div>
+
+            <button class="btn btn-primary btn-generate" id="btnGenerar" onclick="generarConsentimiento()">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clip-rule="evenodd"/></svg>
+              Generar Consentimiento
+            </button>
+
+            <button class="btn btn-ghost" onclick="limpiarFormulario()">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+              Limpiar formulario
+            </button>
+          </div>
+        </div>
+
+        <!-- Resultado -->
+        <div class="card result-card hidden" id="resultCard">
+          <div class="card-body">
+            <div class="result-icon success" id="resultIcon">✓</div>
+            <p class="result-message" id="resultMessage"></p>
+            <div class="result-files" id="resultFiles"></div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /form-layout -->
+  </section>
+
+  <!-- ══ TAB: PERSONAL ════════════════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-personal">
+    <div class="personal-layout">
+
+      <!-- MÉDICOS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">👨‍⚕️</span>
+          <h2>Médicos</h2>
+          <button class="btn btn-sm btn-primary ml-auto" onclick="openModal('medico')">+ Agregar</button>
+        </div>
+        <div class="card-body p0">
+          <table class="data-table" id="medicosTable">
+            <thead>
+              <tr><th>Nombre</th><th>Cédula</th><th>Firma</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="medicosTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ENFERMEROS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">👩‍⚕️</span>
+          <h2>Enfermeros(as)</h2>
+          <button class="btn btn-sm btn-primary ml-auto" onclick="openModal('enfermero')">+ Agregar</button>
+        </div>
+        <div class="card-body p0">
+          <table class="data-table" id="enfermerosTable">
+            <thead>
+              <tr><th>Nombre</th><th>Cédula</th><th>Firma</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="enfermerosTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ TAB: HISTORIAL ═══════════════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-historial">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">📂</span>
+        <h2>Historial de Consentimientos</h2>
+        <div class="card-actions ml-auto">
+          <button class="btn btn-sm btn-ghost" onclick="exportHistorial()">⬇ Exportar CSV</button>
+          <button class="btn btn-sm btn-danger" onclick="clearHistorial()">🗑 Vaciar</button>
+        </div>
+      </div>
+      <div class="search-bar-wrap">
+        <input type="text" id="historialSearch" class="field-input search-input" placeholder="🔍  Buscar por paciente, procedimiento, médico..." oninput="filterHistorial()">
+      </div>
+      <div class="card-body p0">
+        <table class="data-table historial-table">
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Hora</th><th>Paciente</th><th>Procedimiento</th>
+              <th>Médico</th><th>Enfermero</th><th>Archivo</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="historialTbody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="historialEmpty">
+          <div class="empty-icon">📋</div>
+          <p>No hay registros aún</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ TAB: AJUSTES ═════════════════════════════════════════════════════ -->
+  <section class="tab-content" id="tab-ajustes">
+    <div class="settings-layout">
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📁</span>
+          <h2>Carpeta de Destino</h2>
+        </div>
+        <div class="card-body">
+          <div class="field-group">
+            <label class="field-label">Ruta de exportación</label>
+            <div class="path-input-wrap">
+              <input type="text" id="outputFolder" class="field-input" placeholder="Ruta de carpeta...">
+            </div>
+            <p class="field-hint">Los archivos generados se guardan en subcarpetas por procedimiento dentro de esta ruta.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🏥</span>
+          <h2>Información del Hospital</h2>
+        </div>
+        <div class="card-body">
+          <div class="field-group">
+            <label class="field-label">Nombre del hospital / clínica</label>
+            <input type="text" id="hospitalName" class="field-input" placeholder="ej. Clínica XYZ">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🔐</span>
+          <h2>Seguridad</h2>
+        </div>
+        <div class="card-body">
+          <div class="field-group">
+            <label class="field-label">Contraseña de administrador</label>
+            <input type="password" id="adminPassword" class="field-input" placeholder="Nueva contraseña">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📄</span>
+          <h2>Exportación</h2>
+        </div>
+        <div class="card-body">
+          <div class="toggle-row">
+            <span>Exportar PDF automáticamente</span>
+            <label class="ios-toggle">
+              <input type="checkbox" id="settingExportPdf" checked>
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <span>Exportar DOCX automáticamente</span>
+            <label class="ios-toggle">
+              <input type="checkbox" id="settingExportDocx" checked>
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-save">
+        <button class="btn btn-primary" onclick="saveSettings()">
+          💾 Guardar configuración
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main><!-- /main-content -->
+
+<!-- ══ MODAL: AGREGAR/EDITAR PERSONAL ══════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="modalOverlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modalTitle">Agregar Personal</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="modalType">
+      <input type="hidden" id="modalIndex">
+      <div class="field-group">
+        <label class="field-label">Nombre completo <span class="req">*</span></label>
+        <input type="text" id="modalNombre" class="field-input" placeholder="Nombre completo">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Cédula <span class="req">*</span></label>
+        <input type="text" id="modalCedula" class="field-input" placeholder="Número de cédula">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Firma</label>
+        <div class="firma-upload-area" onclick="document.getElementById('modalFirmaFile').click()">
+          <input type="file" id="modalFirmaFile" accept="image/*" style="display:none" onchange="handleModalFirma(this)">
+          <div class="firma-placeholder" id="modalFirmaPlaceholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Clic para cargar firma</span>
+          </div>
+          <img id="modalFirmaPreview" class="firma-preview hidden" alt="Firma">
+        </div>
+        <input type="hidden" id="modalFirmaFilename">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="savePersonal()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ════════════════════════════════════════════════════════════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
