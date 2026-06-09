@@ -18,10 +18,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="brand-icon">
-                <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="3" width="26" height="26" rx="6" fill="var(--accent)" />
-                    <path d="M16 9v14M9 16h14" stroke="white" stroke-width="2.5" stroke-linecap="round" />
-                </svg>
+                <img src="/static/img/icon.png" alt="DHI">
             </div>
             <div class="brand-text">
                 <span class="brand-name">Consentimientos DHI</span>
@@ -60,14 +57,18 @@
                 </svg>
                 <span>Ajustes</span>
             </a>
-            <a href="#" class="nav-item" data-tab="salir">
-                <button class="btn btn-danger" onclick="cerrarAplicacion()">
-                    Salir
-                </button>
-            </a>
+
         </nav>
 
         <div class="sidebar-footer">
+            <a href="#" class="nav-item nav-exit" onclick="cerrarAplicacion()">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M3 4a2 2 0 012-2h5a1 1 0 110 2H5v12h5a1 1 0 110 2H5a2 2 0 01-2-2V4zm10.293 3.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L15.586 11H8a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                </svg>
+                <span>Salir</span>
+            </a>
             <div class="version-badge">v2.4</div>
         </div>
     </aside>
@@ -529,7 +530,7 @@
                 </div>
             </div>
         </section>
-        
+
     </main><!-- /main-content -->
 
     <!-- ══ MODAL: AGREGAR/EDITAR PERSONAL ══════════════════════════════════════ -->

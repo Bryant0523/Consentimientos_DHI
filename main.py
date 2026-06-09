@@ -42,7 +42,7 @@ DEFAULT_CONFIG = {
     "signature_reuse_days": 1,
     "export_pdf": True,
     "export_docx": True,
-    "hospital_name": "Clínica DHI",
+    "hospital_name": "Dhi Restauracion Capilar",
     "appearance": "dark"
 }
 
@@ -296,6 +296,7 @@ def api_plantillas_debug():
 # ─── Generación de consentimiento ────────────────────────────────────────────
 @app.route("/api/generar", methods=["POST"])
 def api_generar():
+
     try:
         from docxtpl import DocxTemplate, InlineImage
         from docx.shared import Mm
@@ -577,6 +578,14 @@ def api_salir():
     return jsonify({
         "ok": True
     })
+@app.route("/api/debug-medicos")
+def debug_medicos():
+
+    return jsonify({
+        "ruta": str(MEDICOS_CSV),
+        "existe": MEDICOS_CSV.exists(),
+        "contenido": read_csv(MEDICOS_CSV)
+    })
 # ─── Historial API ───────────────────────────────────────────────────────────
 @app.route("/api/historial", methods=["GET"])
 def api_historial():
@@ -624,4 +633,4 @@ if __name__ == "__main__":
     port = 5050
     t = threading.Thread(target=open_browser, args=(port,), daemon=True)
     t.start()
-    app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
+    app.run(host="127.0.0.1", port=port, debug=True, use_reloader=False)
