@@ -403,6 +403,15 @@ body {
 }
 
 /* ── Combo / Autocomplete ────────────────────── */
+
+/* Utility: generic collapsed used by various sections */
+.collapsed { display: none; }
+
+/* Quick actions row above Procedimiento */
+.form-actions-row { margin-bottom: 12px; }
+.form-actions-row .btn { width: auto; min-width: 160px; }
+.form-actions-row .combo-wrap { width: 100%; }
+
 .combo-wrap {
   position: relative;
 }
@@ -920,8 +929,15 @@ body {
   border-radius: var(--radius-lg);
   width: 460px;
   max-width: 95vw;
+  max-height: 90vh;
+  overflow: hidden;
   box-shadow: var(--shadow);
   animation: slideUp 0.2s ease;
+}
+
+.modal-body {
+  max-height: calc(90vh - 140px);
+  overflow-y: auto;
 }
 
 @keyframes slideUp {
@@ -1155,4 +1171,198 @@ body {
 .badge-info {
   background: rgba(88, 166, 255, 0.2);
   color: var(--info);
+}
+/* ═══════════════════════════════════════════════════════════════
+   ADICIONES CSS — Overtrack v2.5
+   Agregar al final de app.css (o reemplazar si ya existen)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Patient chip (paciente seleccionado) ──────────────────────── */
+.patient-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface2));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.patient-chip-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.patient-chip-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.patient-chip-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.patient-chip-sub {
+  font-size: 12px;
+  color: var(--text3);
+  font-family: var(--mono);
+  margin-top: 1px;
+}
+
+.patient-chip-badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--warn, #f59e0b) 15%, transparent);
+  color: var(--warn, #f59e0b);
+  border: 1px solid color-mix(in srgb, var(--warn, #f59e0b) 30%, transparent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.patient-chip-clear {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.patient-chip-clear:hover {
+  background: var(--danger-muted, rgba(239,68,68,0.12));
+  color: var(--danger, #ef4444);
+}
+
+/* ── Drop badge (Menor en dropdown) ───────────────────────────── */
+.drop-badge {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--warn, #f59e0b) 15%, transparent);
+  color: var(--warn, #f59e0b);
+  border: 1px solid color-mix(in srgb, var(--warn, #f59e0b) 30%, transparent);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* ── Modal grande ──────────────────────────────────────────────── */
+.modal-lg {
+  max-width: 560px;
+  width: min(92vw, 560px);
+}
+
+.modal.modal-minor {
+  max-width: 500px;
+  width: min(88vw, 500px);
+}
+
+/* ── Etiquetas de sección dentro del modal ─────────────────────── */
+.modal-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 14px;
+}
+
+.modal-section-divider {
+  margin: 20px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+/* ── Toggle menor en modal ─────────────────────────────────────── */
+.minor-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 18px 0 4px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.minor-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.minor-toggle-icon {
+  font-size: 22px;
+}
+
+.minor-toggle-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text1);
+}
+
+.minor-toggle-sub {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 1px;
+}
+
+/* ── Firma compacta (dentro del modal) ────────────────────────── */
+.firma-compact {
+  min-height: 52px !important;
+  padding: 8px 12px !important;
+  flex-direction: row !important;
+  gap: 8px;
+  align-items: center;
+}
+
+.firma-compact .firma-placeholder {
+  flex-direction: row;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.firma-compact .firma-placeholder svg {
+  display: none;
+}
+
+.firma-compact .firma-preview {
+  max-height: 36px;
+  max-width: 80px;
+  object-fit: contain;
+}
+
+/* ── Sección colapsable (también usada en modal) ──────────────── */
+#pmMenorSection {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.25s ease;
+  max-height: 1000px;
+  opacity: 1;
+}
+
+#pmMenorSection.collapsed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
 }

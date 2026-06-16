@@ -1,9 +1,10 @@
 {
-    "output_folder": "C:/Users/DHISO/Downloads",
+    "output_folder": "/home/lian/Descargas",
     "admin_password": "admin",
     "start_fullscreen": false,
     "signature_reuse_days": 1,
     "export_pdf": true,
     "export_docx": true,
-    "appearance": "light"
+    "appearance": "light",
+    "hospital_name": "Dhi Restauracion Capilar"
 }

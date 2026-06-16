@@ -89,6 +89,61 @@ ensure_csv(MEDICOS_CSV,    ["nombre", "cedula", "firma"])
 ensure_csv(ENFERMEROS_CSV, ["nombre", "cedula", "firma"])
 ensure_csv(HISTORIAL_CSV,  ["fecha", "hora", "paciente", "documento", "procedimiento", "medico", "enfermero", "archivo_pdf"])
 
+# ─── Pacientes (SQLite) ───────────────────────────────────────────────────
+PATIENTS_DB = DATA_DIR / "pacientes.db"
+
+def _row_to_dict(cursor, row):
+    return {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
+
+def get_db_conn():
+    conn = sqlite3.connect(str(PATIENTS_DB))
+    conn.row_factory = _row_to_dict
+    return conn
+
+def init_pacientes_table():
+    PATIENTS_DB.parent.mkdir(parents=True, exist_ok=True)
+    conn = get_db_conn()
+    try:
+        cur = conn.cursor()
+        # Tabla principal de pacientes
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS pacientes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT NOT NULL,
+                cedula TEXT NOT NULL UNIQUE,
+                fecha_nacimiento TEXT,
+                lugar_expedicion TEXT,
+                direccion TEXT,
+                telefono TEXT,
+                email TEXT,
+                firma TEXT,
+                es_menor INTEGER DEFAULT 0
+            )
+        ''')
+        # Tabla de acudientes vinculados a pacientes menores
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS acudientes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                paciente_id INTEGER NOT NULL,
+                nombre TEXT NOT NULL,
+                cedula TEXT NOT NULL,
+                parentesco TEXT,
+                lugar_expedicion TEXT,
+                firma TEXT,
+                FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE
+            )
+        ''')
+        # Agregar columna es_menor si no existe (migración)
+        try:
+            cur.execute("ALTER TABLE pacientes ADD COLUMN es_menor INTEGER DEFAULT 0")
+        except:
+            pass
+        conn.commit()
+    finally:
+        conn.close()
+
+init_pacientes_table()
+
 # ─── Historial ───────────────────────────────────────────────────────────────
 def agregar_historial(paciente, documento, procedimiento, medico, enfermero, archivo_pdf):
     now = datetime.now()
@@ -202,6 +257,231 @@ def api_del_enfermero(idx):
         write_csv(ENFERMEROS_CSV, rows, ["nombre", "cedula", "firma"])
     return jsonify({"ok": True})
 
+# ─── Pacientes API (CRUD + búsqueda) ─────────────────────────────────────────
+@app.route("/api/pacientes", methods=["GET"])
+def api_get_pacientes():
+    conn = get_db_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM pacientes ORDER BY nombre COLLATE NOCASE")
+        rows = cur.fetchall()
+        return jsonify(rows)
+    finally:
+        conn.close()
+
+@app.route("/api/pacientes/<int:pid>", methods=["GET"])
+def api_get_paciente(pid):
+    conn = get_db_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM pacientes WHERE id = ?", (pid,))
+        row = cur.fetchone()
+        if not row:
+            return jsonify({}), 404
+        # Incluir acudiente si es menor
+        if row.get("es_menor"):
+            cur.execute("SELECT * FROM acudientes WHERE paciente_id = ? ORDER BY id DESC LIMIT 1", (pid,))
+            acudiente = cur.fetchone()
+            row["acudiente"] = acudiente
+        return jsonify(row)
+    finally:
+        conn.close()
+
+@app.route("/api/pacientes/search", methods=["GET"])
+def api_search_pacientes():
+    q = (request.args.get("q") or "").strip()
+    cedula = (request.args.get("cedula") or "").strip()
+    nombre = (request.args.get("nombre") or "").strip()
+    conn = get_db_conn()
+    try:
+        cur = conn.cursor()
+        if q:
+            pattern = f"%{q}%"
+            cur.execute(
+                "SELECT * FROM pacientes WHERE cedula LIKE ? COLLATE NOCASE OR nombre LIKE ? COLLATE NOCASE",
+                (pattern, pattern),
+            )
+            rows = cur.fetchall()
+        elif cedula:
+            cur.execute("SELECT * FROM pacientes WHERE cedula LIKE ? COLLATE NOCASE", (f"%{cedula}%",))
+            rows = cur.fetchall()
+        elif nombre:
+            pattern = f"%{nombre}%"
+            cur.execute("SELECT * FROM pacientes WHERE nombre LIKE ? COLLATE NOCASE", (pattern,))
+            rows = cur.fetchall()
+        else:
+            return jsonify([])
+        # Enriquecer con acudiente si es menor
+        for row in rows:
+            if row.get("es_menor"):
+                cur.execute("SELECT * FROM acudientes WHERE paciente_id = ? ORDER BY id DESC LIMIT 1", (row["id"],))
+                row["acudiente"] = cur.fetchone()
+        return jsonify(rows)
+    finally:
+        conn.close()
+
+@app.route("/api/pacientes", methods=["POST"])
+def api_add_paciente():
+    data = request.json or {}
+    nombre   = (data.get("nombre") or "").strip()
+    cedula   = (data.get("cedula") or "").strip()
+    es_menor = 1 if data.get("es_menor") else 0
+
+    if not nombre or not cedula:
+        return jsonify({"error": "nombre y cedula son requeridos"}), 400
+
+    conn = get_db_conn()
+    try:
+        cur = conn.cursor()
+        # Si ya existe por cédula, devolver registro existente
+        cur.execute("SELECT * FROM pacientes WHERE cedula = ?", (cedula,))
+        existing = cur.fetchone()
+        if existing:
+            # Enriquecer con acudiente si es menor
+            if existing.get("es_menor"):
+                cur.execute("SELECT * FROM acudientes WHERE paciente_id = ? ORDER BY id DESC LIMIT 1", (existing["id"],))
+                existing["acudiente"] = cur.fetchone()
+            return jsonify({"ok": True, "exists": True, "paciente": existing})
+
+        cur.execute(
+            """INSERT INTO pacientes
+               (nombre, cedula, fecha_nacimiento, lugar_expedicion, direccion, telefono, email, firma, es_menor)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                nombre,
+                cedula,
+                data.get("fecha_nacimiento"),
+                data.get("lugar_expedicion"),
+                data.get("direccion"),
+                data.get("telefono"),
+                data.get("email"),
+                data.get("firma"),
+                es_menor,
+            )
+        )
+        conn.commit()
+        new_id = cur.lastrowid
+
+        # Guardar acudiente si viene en el payload
+        acudiente_data = data.get("acudiente")
+        if es_menor and acudiente_data and acudiente_data.get("nombre") and acudiente_data.get("cedula"):
+            cur.execute(
+                """INSERT INTO acudientes (paciente_id, nombre, cedula, parentesco, lugar_expedicion, firma)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (
+                    new_id,
+                    acudiente_data.get("nombre", "").strip(),
+                    acudiente_data.get("cedula", "").strip(),
+                    acudiente_data.get("parentesco", "").strip(),
+                    acudiente_data.get("lugar_expedicion", "").strip(),
+                    acudiente_data.get("firma", ""),
+                )
+            )
+            conn.commit()
+
+        cur.execute("SELECT * FROM pacientes WHERE id = ?", (new_id,))
+        nuevo = cur.fetchone()
+        if nuevo.get("es_menor"):
+            cur.execute("SELECT * FROM acudientes WHERE paciente_id = ? ORDER BY id DESC LIMIT 1", (new_id,))
+            nuevo["acudiente"] = cur.fetchone()
+
+        return jsonify({"ok": True, "exists": False, "paciente": nuevo})
+    finally:
+        conn.close()
+
+@app.route("/api/pacientes/<int:pid>", methods=["PUT"])
+def api_edit_paciente(pid):
+    data = request.json or {}
+    es_menor = 1 if data.get("es_menor") else 0
+    conn = get_db_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM pacientes WHERE id = ?", (pid,))
+        if not cur.fetchone():
+            return jsonify({"error": "not found"}), 404
+        cur.execute(
+            """UPDATE pacientes
+               SET nombre=?, cedula=?, fecha_nacimiento=?, lugar_expedicion=?,
+                   direccion=?, telefono=?, email=?, firma=?, es_menor=?
+               WHERE id=?""",
+            (
+                data.get("nombre"),
+                data.get("cedula"),
+                data.get("fecha_nacimiento"),
+                data.get("lugar_expedicion"),
+                data.get("direccion"),
+                data.get("telefono"),
+                data.get("email"),
+                data.get("firma"),
+                es_menor,
+                pid,
+            )
+        )
+        # Actualizar acudiente si viene
+        acudiente_data = data.get("acudiente")
+        if es_menor and acudiente_data and acudiente_data.get("nombre") and acudiente_data.get("cedula"):
+            cur.execute("SELECT id FROM acudientes WHERE paciente_id = ? ORDER BY id DESC LIMIT 1", (pid,))
+            existing_ac = cur.fetchone()
+            if existing_ac:
+                cur.execute(
+                    """UPDATE acudientes SET nombre=?, cedula=?, parentesco=?, lugar_expedicion=?, firma=?
+                       WHERE id=?""",
+                    (
+                        acudiente_data.get("nombre", "").strip(),
+                        acudiente_data.get("cedula", "").strip(),
+                        acudiente_data.get("parentesco", "").strip(),
+                        acudiente_data.get("lugar_expedicion", "").strip(),
+                        acudiente_data.get("firma", ""),
+                        existing_ac["id"],
+                    )
+                )
+            else:
+                cur.execute(
+                    """INSERT INTO acudientes (paciente_id, nombre, cedula, parentesco, lugar_expedicion, firma)
+                       VALUES (?, ?, ?, ?, ?, ?)""",
+                    (
+                        pid,
+                        acudiente_data.get("nombre", "").strip(),
+                        acudiente_data.get("cedula", "").strip(),
+                        acudiente_data.get("parentesco", "").strip(),
+                        acudiente_data.get("lugar_expedicion", "").strip(),
+                        acudiente_data.get("firma", ""),
+                    )
+                )
+        conn.commit()
+        cur.execute("SELECT * FROM pacientes WHERE id = ?", (pid,))
+        updated = cur.fetchone()
+        if updated.get("es_menor"):
+            cur.execute("SELECT * FROM acudientes WHERE paciente_id = ? ORDER BY id DESC LIMIT 1", (pid,))
+            updated["acudiente"] = cur.fetchone()
+        return jsonify({"ok": True, "paciente": updated})
+    finally:
+        conn.close()
+
+@app.route("/api/pacientes/<int:pid>", methods=["DELETE"])
+def api_del_paciente(pid):
+    conn = get_db_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM acudientes WHERE paciente_id = ?", (pid,))
+        cur.execute("DELETE FROM pacientes WHERE id = ?", (pid,))
+        conn.commit()
+        return jsonify({"ok": True})
+    finally:
+        conn.close()
+
+# ─── Acudiente API (directo por paciente) ────────────────────────────────────
+@app.route("/api/pacientes/<int:pid>/acudiente", methods=["GET"])
+def api_get_acudiente(pid):
+    conn = get_db_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM acudientes WHERE paciente_id = ? ORDER BY id DESC LIMIT 1", (pid,))
+        row = cur.fetchone()
+        return jsonify(row or {})
+    finally:
+        conn.close()
+
 # ─── Firma upload ────────────────────────────────────────────────────────────
 @app.route("/api/upload-firma", methods=["POST"])
 def upload_firma():
@@ -225,21 +505,14 @@ def get_firma_img(filename):
 # ─── Plantillas ──────────────────────────────────────────────────────────────
 @app.route("/api/plantillas", methods=["GET"])
 def api_plantillas():
-
     categorias = {}
-
     for categoria_dir in TEMPLATES_DIR.iterdir():
-
         if not categoria_dir.is_dir():
             continue
-
         plantillas = []
-
         for archivo in categoria_dir.glob("*.docx"):
             plantillas.append(archivo.stem)
-
         categorias[categoria_dir.name] = sorted(plantillas)
-
     return jsonify(categorias)
 
 @app.route("/api/plantillas-debug")
@@ -254,15 +527,14 @@ def api_plantillas_debug():
                       for f in TEMPLATES_DIR.rglob("*.docx")]
     }
     return jsonify(info)
+
 @app.route("/api/pdf-status", methods=["GET"])
 def api_pdf_status():
-    """Diagnóstico: qué conversores de PDF están disponibles"""
-    import shutil as sh, glob, os
+    import shutil as sh
     soffice = _encontrar_soffice()
     word_ok = False
     try:
         from docx2pdf import convert
-        # docx2pdf disponible pero Word puede no estar
         import subprocess
         if os.name == 'nt':
             r = subprocess.run(
@@ -283,20 +555,10 @@ def api_pdf_status():
             "⚠ Instala LibreOffice para exportar PDF con diseño completo: https://www.libreoffice.org/download/"
         )
     })
-def api_plantillas_debug():
-    """Endpoint de diagnóstico para ver qué hay en app_templates"""
-    info = {
-        "templates_dir": str(TEMPLATES_DIR),
-        "exists": TEMPLATES_DIR.exists(),
-        "all_files": [str(f.relative_to(TEMPLATES_DIR)) for f in TEMPLATES_DIR.rglob("*") if f.is_file()],
-        "docx_files": [str(f.relative_to(TEMPLATES_DIR)) for f in TEMPLATES_DIR.rglob("*.docx")],
-    }
-    return jsonify(info)
 
 # ─── Generación de consentimiento ────────────────────────────────────────────
 @app.route("/api/generar", methods=["POST"])
 def api_generar():
-
     try:
         from docxtpl import DocxTemplate, InlineImage
         from docx.shared import Mm
@@ -306,21 +568,18 @@ def api_generar():
     data = request.json
     cfg  = load_config()
 
-    # Validación básica
     for campo in ("paciente", "cedula_paciente", "procedimiento"):
         if not data.get(campo, "").strip():
             return jsonify({"error": f"Campo requerido: {campo}"}), 400
 
     plantilla_nombre = data.get("procedimiento", "").strip()
 
-    # Buscar plantilla: exacta → case-insensitive → parcial → subdirectorios
     import unicodedata
     def _norm(s):
         s = unicodedata.normalize("NFD", s.lower())
         return "".join(c for c in s if unicodedata.category(c) != "Mn")
 
     def find_template(nombre):
-        # 1. Exacta
         p = TEMPLATES_DIR / f"{nombre}.docx"
         if p.exists(): return p
         nombre_n = _norm(nombre)
@@ -334,9 +593,7 @@ def api_generar():
     plantilla_path = find_template(plantilla_nombre)
     if not plantilla_path:
         disponibles = [f.stem for f in TEMPLATES_DIR.rglob("*.docx")]
-        return jsonify({
-            "error": f"Plantilla not found. Disponibles: {disponibles}"
-        }), 404
+        return jsonify({"error": f"Plantilla not found. Disponibles: {disponibles}"}), 404
 
     try:
         tpl = DocxTemplate(str(plantilla_path))
@@ -354,45 +611,44 @@ def api_generar():
         except:
             return None
 
-    # Obtener datos médico — comparación robusta (strip + lower)
     medicos = read_csv(MEDICOS_CSV)
     doctor_input = (data.get("doctor", "") or "").strip().lower()
     doctor_data = next(
-        (m for m in medicos if m["nombre"].strip().lower() == doctor_input),
-        {}
+        (m for m in medicos if m["nombre"].strip().lower() == doctor_input), {}
     )
 
-    # Obtener datos enfermero — comparación robusta
     enfermeros = read_csv(ENFERMEROS_CSV)
     enf_input = (data.get("enfermero", "") or "").strip().lower()
     enf_data = next(
-        (e for e in enfermeros if e["nombre"].strip().lower() == enf_input),
-        {}
+        (e for e in enfermeros if e["nombre"].strip().lower() == enf_input), {}
     )
 
+    # Datos de acudiente (pueden venir del paciente seleccionado o del payload directo)
+    acudiente = data.get("acudiente") or {}
+
     ctx = {
-        "paciente":               data.get("paciente", ""),
-        "cedula_paciente":        data.get("cedula_paciente", ""),
+        "paciente":                  data.get("paciente", ""),
+        "cedula_paciente":           data.get("cedula_paciente", ""),
         "lugar_expedicion_paciente": data.get("lugar_expedicion_paciente", "Barranquilla"),
-        "firma_paciente":         get_firma_inline(data.get("firma_paciente_file", "")),
-        "doctor":                 doctor_data.get("nombre", data.get("doctor", "")),
-        "cedula_doctor":          doctor_data.get("cedula", ""),
-        "firma_doctor":           get_firma_inline(doctor_data.get("firma", "")),
-        "enfermero":              enf_data.get("nombre", data.get("enfermero", "")),
-        "cedula_enfermero":       enf_data.get("cedula", ""),
-        "firma_enfermero":        get_firma_inline(enf_data.get("firma", "")),
-        "fecha":                  datetime.now().strftime("%d/%m/%Y"),
-        # Menor de edad
-        "menor_nombre":           data.get("menor_nombre", ""),
-        "cedula_menor":           data.get("cedula_menor", ""),
-        "lugar_expedicion_menor": data.get("lugar_expedicion_menor", ""),
-        "firma_menor":            get_firma_inline(data.get("firma_menor_file", "")),
+        "firma_paciente":            get_firma_inline(data.get("firma_paciente_file", "")),
+        "doctor":                    doctor_data.get("nombre", data.get("doctor", "")),
+        "cedula_doctor":             doctor_data.get("cedula", ""),
+        "firma_doctor":              get_firma_inline(doctor_data.get("firma", "")),
+        "enfermero":                 enf_data.get("nombre", data.get("enfermero", "")),
+        "cedula_enfermero":          enf_data.get("cedula", ""),
+        "firma_enfermero":           get_firma_inline(enf_data.get("firma", "")),
+        "fecha":                     datetime.now().strftime("%d/%m/%Y"),
+        # Menor de edad — puede venir inline o desde el paciente seleccionado
+        "menor_nombre":              data.get("menor_nombre", ""),
+        "cedula_menor":              data.get("cedula_menor", ""),
+        "lugar_expedicion_menor":    data.get("lugar_expedicion_menor", ""),
+        "firma_menor":               get_firma_inline(data.get("firma_menor_file", "")),
         # Acudiente
-        "acudiente_nombre":       data.get("acudiente_nombre", ""),
-        "cedula_acudiente":       data.get("cedula_acudiente", ""),
-        "parentesco_acudiente":   data.get("parentesco_acudiente", ""),
-        "lugar_expedicion_acudiente": data.get("lugar_expedicion_acudiente", ""),
-        "firma_acudiente":        get_firma_inline(data.get("firma_acudiente_file", "")),
+        "acudiente_nombre":          acudiente.get("nombre", data.get("acudiente_nombre", "")),
+        "cedula_acudiente":          acudiente.get("cedula", data.get("cedula_acudiente", "")),
+        "parentesco_acudiente":      acudiente.get("parentesco", data.get("parentesco_acudiente", "")),
+        "lugar_expedicion_acudiente": acudiente.get("lugar_expedicion", data.get("lugar_expedicion_acudiente", "")),
+        "firma_acudiente":           get_firma_inline(acudiente.get("firma", data.get("firma_acudiente_file", ""))),
     }
 
     try:
@@ -400,9 +656,8 @@ def api_generar():
     except Exception as e:
         return jsonify({"error": f"Error al renderizar plantilla: {e}"}), 500
 
-    # Guardar archivo
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    pac_slug = data["paciente"].replace(" ", "_")
+    pac_slug  = data["paciente"].replace(" ", "_")
     proc_slug = plantilla_nombre.replace(" ", "_")
     out_folder = Path(cfg["output_folder"]) / proc_slug
     out_folder.mkdir(parents=True, exist_ok=True)
@@ -415,8 +670,8 @@ def api_generar():
     except Exception as e:
         return jsonify({"error": f"No se pudo guardar el .docx: {e}"}), 500
 
-    pdf_ok = False
-    pdf_file = ""
+    pdf_ok    = False
+    pdf_file  = ""
     pdf_error = ""
     if cfg.get("export_pdf", True):
         pdf_ok, pdf_file, pdf_error = convertir_a_pdf(docx_path, pdf_path)
@@ -428,7 +683,7 @@ def api_generar():
             pass
 
     agregar_historial(
-        data["paciente"], data.get("cedula_paciente",""),
+        data["paciente"], data.get("cedula_paciente", ""),
         plantilla_nombre,
         doctor_data.get("nombre", data.get("doctor", "")),
         enf_data.get("nombre", data.get("enfermero", "")),
@@ -436,24 +691,17 @@ def api_generar():
     )
 
     return jsonify({
-        "ok": True,
-        "docx": str(docx_path) if cfg.get("export_docx", True) else "",
-        "pdf":     pdf_file,
-        "pdf_ok":  pdf_ok,
+        "ok":        True,
+        "docx":      str(docx_path) if cfg.get("export_docx", True) else "",
+        "pdf":       pdf_file,
+        "pdf_ok":    pdf_ok,
         "pdf_error": pdf_error,
-        "message": f"Consentimiento '{plantilla_path.stem}' creado exitosamente."
+        "message":   f"Consentimiento '{plantilla_path.stem}' creado exitosamente."
     })
 
 def convertir_a_pdf(docx_path: Path, pdf_path: Path):
-    """
-    Intenta convertir docx → pdf en este orden:
-    1. LibreOffice (soffice) — gratis, funciona sin instalar nada extra en Windows si está instalado
-    2. docx2pdf  — requiere Microsoft Word instalado
-    Devuelve (ok: bool, pdf_path_str: str, error_msg: str)
-    """
     import subprocess, shutil
 
-    # ── 1. LibreOffice ────────────────────────────────────────────────────────
     soffice = _encontrar_soffice()
     if soffice:
         try:
@@ -463,20 +711,17 @@ def convertir_a_pdf(docx_path: Path, pdf_path: Path):
                  "--outdir", out_dir, str(docx_path)],
                 capture_output=True, text=True, timeout=60
             )
-            # LibreOffice guarda como <nombre_docx>.pdf en outdir
             lo_pdf = pdf_path.parent / (docx_path.stem + ".pdf")
             if lo_pdf.exists():
                 if lo_pdf != pdf_path:
                     shutil.move(str(lo_pdf), str(pdf_path))
                 return True, str(pdf_path), ""
-            # Puede fallar silenciosamente
             return False, "", f"LibreOffice no generó el PDF. stderr: {result.stderr[:200]}"
         except subprocess.TimeoutExpired:
             return False, "", "LibreOffice tardó demasiado (timeout 60s)"
-        except Exception as e:
-            pass  # intentar siguiente método
+        except Exception:
+            pass
 
-    # ── 2. docx2pdf (Microsoft Word) ─────────────────────────────────────────
     try:
         from docx2pdf import convert
         convert(str(docx_path), str(pdf_path))
@@ -486,28 +731,21 @@ def convertir_a_pdf(docx_path: Path, pdf_path: Path):
     except Exception as e:
         err = str(e)
 
-    # ── Sin conversor disponible ──────────────────────────────────────────────
     msg = ("No se encontró LibreOffice ni Microsoft Word. "
-           "Instala LibreOffice (gratuito) para exportar PDF con el diseño completo de la plantilla.")
+           "Instala LibreOffice (gratuito) para exportar PDF.")
     return False, "", msg
 
 
 def _encontrar_soffice():
-    """Busca el ejecutable de LibreOffice en rutas típicas de Windows y Linux."""
     import os, glob, shutil as sh
-
-    # which encuentra soffice.COM en Windows que funciona correctamente en background
     exe = sh.which("soffice") or sh.which("libreoffice")
     if exe:
         return exe
-
-    # Fallback: rutas fijas Windows
     for patron in [r"C:\Program Files\LibreOffice*\program\soffice.exe",
                    r"C:\Program Files (x86)\LibreOffice*\program\soffice.exe"]:
         matches = glob.glob(patron)
         if matches:
             return matches[0]
-
     rutas_win = [
         r"C:\Program Files\LibreOffice\program\soffice.exe",
         r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
@@ -515,77 +753,9 @@ def _encontrar_soffice():
     for p in rutas_win:
         if os.path.isfile(p):
             return p
-
     return None
 
 
-def _generar_pdf_simple(docx_path, pdf_path, ctx):
-    """Fallback PDF using reportlab when docx2pdf unavailable"""
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image as RLImage
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.pagesizes import letter
-    from reportlab.lib.units import cm
-    from reportlab.lib import colors
-
-    doc = SimpleDocTemplate(pdf_path, pagesize=letter,
-                            leftMargin=3*cm, rightMargin=3*cm,
-                            topMargin=3*cm, bottomMargin=3*cm)
-    styles = getSampleStyleSheet()
-    story = []
-
-    title_style = ParagraphStyle('title', parent=styles['Heading1'],
-                                  fontSize=16, spaceAfter=20, alignment=1)
-    body_style  = ParagraphStyle('body', parent=styles['Normal'],
-                                  fontSize=11, leading=16, spaceAfter=8)
-
-    story.append(Paragraph("CONSENTIMIENTO INFORMADO", title_style))
-    story.append(Spacer(1, 0.5*cm))
-
-    fields = [
-        ("Paciente", ctx.get("paciente","")),
-        ("Cédula", ctx.get("cedula_paciente","")),
-        ("Lugar expedición", ctx.get("lugar_expedicion_paciente","")),
-        ("Médico", ctx.get("doctor","")),
-        ("Cédula médico", ctx.get("cedula_doctor","")),
-        ("Enfermero(a)", ctx.get("enfermero","")),
-        ("Procedimiento", docx_path.split("_")[1] if "_" in docx_path else ""),
-        ("Fecha", ctx.get("fecha","")),
-    ]
-    if ctx.get("menor_nombre"):
-        fields += [
-            ("Menor de edad", ctx.get("menor_nombre","")),
-            ("T.I / Reg. Civil", ctx.get("cedula_menor","")),
-            ("Acudiente", ctx.get("acudiente_nombre","")),
-            ("Cédula acudiente", ctx.get("cedula_acudiente","")),
-        ]
-
-    for label, value in fields:
-        if value:
-            story.append(Paragraph(f"<b>{label}:</b> {value}", body_style))
-
-    story.append(Spacer(1, 1*cm))
-    story.append(Paragraph("Firma del profesional:", body_style))
-
-    doc.build(story)
-@app.route('/api/salir', methods=['POST'])
-def api_salir():
-
-    def cerrar():
-        os._exit(0)
-
-    threading.Timer(1, cerrar).start()
-
-    return jsonify({
-        "ok": True
-    })
-@app.route("/api/debug-medicos")
-def debug_medicos():
-
-    return jsonify({
-        "ruta": str(MEDICOS_CSV),
-        "existe": MEDICOS_CSV.exists(),
-        "contenido": read_csv(MEDICOS_CSV)
-    })
 # ─── Historial API ───────────────────────────────────────────────────────────
 @app.route("/api/historial", methods=["GET"])
 def api_historial():
@@ -621,6 +791,21 @@ def api_export_historial():
     if HISTORIAL_CSV.exists():
         return send_file(str(HISTORIAL_CSV), as_attachment=True, download_name="historial.csv")
     return jsonify({"error": "Sin historial"}), 404
+
+@app.route('/api/salir', methods=['POST'])
+def api_salir():
+    def cerrar():
+        os._exit(0)
+    threading.Timer(1, cerrar).start()
+    return jsonify({"ok": True})
+
+@app.route("/api/debug-medicos")
+def debug_medicos():
+    return jsonify({
+        "ruta": str(MEDICOS_CSV),
+        "existe": MEDICOS_CSV.exists(),
+        "contenido": read_csv(MEDICOS_CSV)
+    })
 
 # ─── Main ────────────────────────────────────────────────────────────────────
 def open_browser(port):
