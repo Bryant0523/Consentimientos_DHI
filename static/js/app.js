@@ -20,8 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupPatientSearch();
   setupSummaryUpdates();
   await cargarCategorias();
-  updateFecha();
-  setInterval(updateFecha, 60000);
+  initFecha();
   await loadAll();
 });
 
@@ -240,9 +239,13 @@ function renderPatientDrop(drop, items, anchorInput) {
   drop.style.width = rect.width + 'px';
 
   items.forEach(p => {
+    const esMenor = p.es_menor === true || p.es_menor === 1 || p.es_menor === '1';
     const div = document.createElement('div');
     div.className = 'dropdown-item';
-    const badge = p.es_menor ? '<span class="drop-badge">Menor</span>' : '';
+    const badge = esMenor
+      ? `<span style="background:#fef3c7;color:#92400e;font-size:11px;font-weight:600;
+                       padding:2px 8px;border-radius:999px;white-space:nowrap;">👶 Menor de edad</span>`
+      : '';
     div.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
         <div>
@@ -268,15 +271,13 @@ function selectPaciente(p) {
 
   const chip = document.getElementById('pacienteChip');
   chip.classList.remove('hidden');
+  chip.style.display = 'flex'; // ← forzado, por si .hidden no existe en el CSS
   document.getElementById('chipNombre').textContent = p.nombre || '—';
   document.getElementById('chipCedula').textContent = p.cedula || '—';
 
+  const esMenor = p.es_menor === true || p.es_menor === 1 || p.es_menor === '1';
   const menorBadge = document.getElementById('chipMenorBadge');
-  if (p.es_menor) {
-    menorBadge.classList.remove('hidden');
-  } else {
-    menorBadge.classList.add('hidden');
-  }
+  menorBadge.style.display = esMenor ? 'inline-flex' : 'none'; // ← forzado
 
   const si = document.getElementById('pacienteSearch');
   if (si) si.value = p.nombre || '';
@@ -290,8 +291,10 @@ function selectPaciente(p) {
 
 function clearPaciente(preserveInput = false) {
   state.pacienteActivo = null;
-  document.getElementById('pacienteChip').classList.add('hidden');
-  document.getElementById('chipMenorBadge').classList.add('hidden');
+  const chip = document.getElementById('pacienteChip');
+  chip.classList.add('hidden');
+  chip.style.display = 'none'; // ← forzado
+  document.getElementById('chipMenorBadge').style.display = 'none'; // ← forzado
 
   const si = document.getElementById('pacienteSearch');
   if (si && !preserveInput) si.value = '';
@@ -305,15 +308,14 @@ function clearPaciente(preserveInput = false) {
 // ─── Modal Crear Paciente ─────────────────────────
 function openPatientModal(patientId = null) {
   ['pmId','pmNombre','pmCedula','pmLugar','pmFirmaFilename',
-   'pmMenorNombre','pmMenorCedula','pmMenorLugar','pmMenorFirmaFilename',
    'pmAcudienteNombre','pmAcudienteCedula','pmAcudienteParentesco','pmAcudienteLugar','pmAcudienteFirmaFilename'
   ].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
 
-  ['pmFirmaPreview','pmMenorFirmaPreview','pmAcudienteFirmaPreview'].forEach(id => {
+  ['pmFirmaPreview','pmAcudienteFirmaPreview'].forEach(id => {
     const el = document.getElementById(id);
     if (el) { el.classList.add('hidden'); el.src = ''; }
   });
-  ['pmFirmaPlaceholder','pmMenorFirmaPlaceholder','pmAcudienteFirmaPlaceholder'].forEach(id => {
+  ['pmFirmaPlaceholder','pmAcudienteFirmaPlaceholder'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = '';
   });
@@ -335,19 +337,10 @@ function openPatientModal(patientId = null) {
         img.classList.remove('hidden');
         document.getElementById('pmFirmaPlaceholder').style.display = 'none';
       }
-      if (paciente.es_menor) {
+      const esMenor = paciente.es_menor === true || paciente.es_menor === 1 || paciente.es_menor === '1';
+      if (esMenor) {
         document.getElementById('pmEsMenor').checked = true;
         setPatientModalMinorMode(true);
-        document.getElementById('pmMenorNombre').value = paciente.menor_nombre || '';
-        document.getElementById('pmMenorCedula').value = paciente.menor_cedula || '';
-        document.getElementById('pmMenorLugar').value = paciente.menor_lugar_expedicion || '';
-        document.getElementById('pmMenorFirmaFilename').value = paciente.menor_firma || '';
-        if (paciente.menor_firma) {
-          const img = document.getElementById('pmMenorFirmaPreview');
-          img.src = `/api/firma-img/${encodeURIComponent(paciente.menor_firma)}`;
-          img.classList.remove('hidden');
-          document.getElementById('pmMenorFirmaPlaceholder').style.display = 'none';
-        }
         if (paciente.acudiente) {
           document.getElementById('pmAcudienteNombre').value = paciente.acudiente.nombre || '';
           document.getElementById('pmAcudienteCedula').value = paciente.acudiente.cedula || '';
@@ -374,17 +367,19 @@ function closePatientModal() {
 }
 
 function setPatientModalMinorMode(on) {
-  const baseSection = document.getElementById('pmPacienteMainSection');
   const minorSection = document.getElementById('pmMenorSection');
-  const title = document.getElementById('pmMenorToggleTitle');
-  const sub = document.getElementById('pmMenorToggleSub');
-  const saveButton = document.getElementById('pmSaveButton');
-  const modal = document.querySelector('#patientModalOverlay .modal');
+  const mainLabel    = document.getElementById('pmMainSectionLabel');
+  const firmaLabel   = document.getElementById('pmFirmaLabel');
+  const title        = document.getElementById('pmMenorToggleTitle');
+  const sub          = document.getElementById('pmMenorToggleSub');
+  const saveButton   = document.getElementById('pmSaveButton');
+  const modal        = document.querySelector('#patientModalOverlay .modal');
 
-  if (baseSection) baseSection.classList.toggle('collapsed', on);
   if (minorSection) minorSection.classList.toggle('collapsed', !on);
+  if (mainLabel)  mainLabel.textContent  = on ? 'Datos del menor' : 'Datos del paciente';
+  if (firmaLabel) firmaLabel.textContent = on ? 'Firma del menor (opcional)' : 'Firma del paciente';
   if (title) title.textContent = on ? 'Paciente menor de edad' : 'Paciente mayor de edad';
-  if (sub) sub.textContent = on ? 'Completa los datos del menor y del acudiente' : 'Activa para registrar datos del acudiente';
+  if (sub)   sub.textContent   = on ? 'Completa los datos del acudiente' : 'Activa si el paciente es menor de edad';
   if (saveButton) saveButton.textContent = on ? '💾 Guardar menor y acudiente' : '💾 Crear y seleccionar';
   if (modal) modal.classList.toggle('modal-minor', on);
 }
@@ -405,7 +400,6 @@ async function handlePmFirma(tipo, input) {
     if (!data.ok) throw new Error(data.error);
     const cfg = {
       paciente:  { prev: 'pmFirmaPreview',          ph: 'pmFirmaPlaceholder',          fn: 'pmFirmaFilename' },
-      menor:     { prev: 'pmMenorFirmaPreview',     ph: 'pmMenorFirmaPlaceholder',     fn: 'pmMenorFirmaFilename' },
       acudiente: { prev: 'pmAcudienteFirmaPreview', ph: 'pmAcudienteFirmaPlaceholder', fn: 'pmAcudienteFirmaFilename' },
     };
     const { prev, ph, fn } = cfg[tipo];
@@ -421,26 +415,17 @@ async function handlePmFirma(tipo, input) {
 }
 
 async function savePatient() {
-  const esMenor  = document.getElementById('pmEsMenor').checked;
-  const nombre   = esMenor
-    ? document.getElementById('pmMenorNombre').value.trim()
-    : document.getElementById('pmNombre').value.trim();
-  const cedula   = esMenor
-    ? document.getElementById('pmMenorCedula').value.trim()
-    : document.getElementById('pmCedula').value.trim();
-  const lugar    = esMenor
-    ? document.getElementById('pmMenorLugar').value.trim()
-    : document.getElementById('pmLugar').value.trim();
-  const firma    = esMenor
-    ? document.getElementById('pmMenorFirmaFilename').value
-    : document.getElementById('pmFirmaFilename').value;
+  const esMenor = document.getElementById('pmEsMenor').checked;
+  const nombre  = document.getElementById('pmNombre').value.trim();
+  const cedula  = document.getElementById('pmCedula').value.trim();
+  const lugar   = document.getElementById('pmLugar').value.trim();
+  const firma   = document.getElementById('pmFirmaFilename').value;
 
   if (!nombre || !cedula) {
     toast('Campos requeridos', 'Nombre y cédula son obligatorios', 'error');
     return;
   }
 
-  // Si es menor, validar datos mínimos del acudiente
   if (esMenor) {
     const acNombre = document.getElementById('pmAcudienteNombre').value.trim();
     const acCedula = document.getElementById('pmAcudienteCedula').value.trim();
@@ -460,17 +445,18 @@ async function savePatient() {
 
   if (esMenor) {
     payload.acudiente = {
-      nombre:          document.getElementById('pmAcudienteNombre').value.trim(),
-      cedula:          document.getElementById('pmAcudienteCedula').value.trim(),
-      parentesco:      document.getElementById('pmAcudienteParentesco').value.trim(),
+      nombre:           document.getElementById('pmAcudienteNombre').value.trim(),
+      cedula:           document.getElementById('pmAcudienteCedula').value.trim(),
+      parentesco:       document.getElementById('pmAcudienteParentesco').value.trim(),
       lugar_expedicion: document.getElementById('pmAcudienteLugar').value.trim(),
-      firma:           document.getElementById('pmAcudienteFirmaFilename').value,
+      firma:            document.getElementById('pmAcudienteFirmaFilename').value,
     };
-    // Datos del menor en el payload también (para el contexto del consentimiento)
-    payload.menor_nombre           = document.getElementById('pmMenorNombre').value.trim();
-    payload.menor_cedula           = document.getElementById('pmMenorCedula').value.trim();
-    payload.menor_lugar_expedicion = document.getElementById('pmMenorLugar').value.trim();
-    payload.menor_firma            = document.getElementById('pmMenorFirmaFilename').value;
+    // Mirror de los datos del menor para las plantillas .docx que usan campos separados
+    // (menor_nombre, cedula_menor, etc.) — mismos valores que arriba, sin pedirlos dos veces
+    payload.menor_nombre           = nombre;
+    payload.menor_cedula           = cedula;
+    payload.menor_lugar_expedicion = lugar;
+    payload.menor_firma            = firma;
   }
 
   try {
@@ -494,13 +480,15 @@ async function savePatient() {
     toast('Error', e.message, 'error');
   }
 }
-
 // ─── Generar consentimiento ───────────────────────
 async function generarConsentimiento() {
   const btn = document.getElementById('btnGenerar');
 
   const procedimiento = document.getElementById('plantillaSelect').value;
   if (!procedimiento) { toast('Campo requerido', 'Selecciona una plantilla', 'error'); return; }
+
+  const fechaValue = document.getElementById('fechaInput').value;
+  if (!fechaValue) { toast('Campo requerido', 'Selecciona la fecha del consentimiento', 'error'); return; }
 
   // Paciente: preferir el activo, sino lo que haya en los inputs
   const pac        = state.pacienteActivo;
@@ -522,6 +510,7 @@ async function generarConsentimiento() {
     firma_paciente_file:         pac?.firma || '',
     doctor:                      document.getElementById('medicoInput').value.trim(),
     enfermero:                   document.getElementById('enfermeroInput').value.trim(),
+    fecha:                       fechaValue,   // ← agregado, formato yyyy-mm-dd
     export_pdf:                  document.getElementById('exportPdf').checked,
     export_docx:                 document.getElementById('exportDocx').checked,
   };
@@ -575,6 +564,8 @@ function limpiarFormulario() {
   if (catSel) catSel.selectedIndex = 0;
   if (pltSel) pltSel.innerHTML = '<option value="">Seleccione una plantilla</option>';
 
+  initFecha(); // ← agregado, en vez de nada
+
   document.getElementById('resultCard').classList.add('hidden');
   updateSummary();
   toast('Formulario limpiado', '', 'info');
@@ -587,10 +578,31 @@ function setupSummaryUpdates() {
   });
 }
 
+function initFecha() {
+  const input = document.getElementById('fechaInput');
+  if (!input) return;
+  // Precarga con la fecha de hoy en formato yyyy-mm-dd (requerido por <input type="date">)
+  const hoy = new Date();
+  const yyyy = hoy.getFullYear();
+  const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+  const dd = String(hoy.getDate()).padStart(2, '0');
+  input.value = `${yyyy}-${mm}-${dd}`;
+
+  input.addEventListener('change', updateSummary);
+  updateFecha();
+}
+
 function updateFecha() {
-  const str = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const input = document.getElementById('fechaInput');
   const el = document.getElementById('sumFecha');
-  if (el) el.textContent = str;
+  if (!el) return;
+
+  if (input && input.value) {
+    const [y, m, d] = input.value.split('-');
+    el.textContent = `${d}/${m}/${y}`;
+  } else {
+    el.textContent = '—';
+  }
 }
 
 function updateSummary() {
@@ -606,6 +618,8 @@ function updateSummary() {
   const sk = document.getElementById('sumCedula'); if (sk) sk.textContent = cedula || '—';
   const sm = document.getElementById('sumMed');    if (sm) sm.textContent = med    || '—';
   const se = document.getElementById('sumEnf');    if (se) se.textContent = enf    || '—';
+
+  updateFecha(); 
 
   // Mostrar fila acudiente si el paciente es menor
   const menorRow = document.getElementById('sumMenorRow');
@@ -638,7 +652,7 @@ function renderPacientes() {
     tr.innerHTML = `
       <td>${escHtml(p.nombre)}</td>
       <td><code style="font-family:var(--mono);font-size:12px;color:var(--text2)">${escHtml(p.cedula)}</code></td>
-      <td>${p.es_menor ? '<span class="badge badge-info">Sí</span>' : 'No'}</td>
+      <td>${(p.es_menor === true || p.es_menor === 1 || p.es_menor === '1') ? '<span class="badge badge-info">Sí</span>' : 'No'}</td>
       <td><div class="table-actions">
         <button class="btn btn-sm btn-ghost btn-icon" onclick="openPatientModal(${p.id})" title="Editar">✏️</button>
         <button class="btn btn-sm btn-danger btn-icon" onclick="deletePaciente(${p.id})" title="Eliminar">🗑</button>

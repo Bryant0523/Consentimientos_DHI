@@ -10,6 +10,7 @@ import shutil
 import threading
 import webbrowser
 import sqlite3
+import requests
 from pathlib import Path
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
@@ -31,6 +32,9 @@ CONFIG_PATH    = DATA_DIR / "config.json"
 MEDICOS_CSV    = DATA_DIR / "medicos.csv"
 ENFERMEROS_CSV = DATA_DIR / "enfermeros.csv"
 HISTORIAL_CSV  = DATA_DIR / "historial.csv"
+APP_VERSION = "2.5.0"  # ← actualiza esto en cada release que publiques
+GITHUB_OWNER = "Bryant0523"      # USUARIO GITHUB
+GITHUB_REPO  = "https://github.com/Bryant0523/Consentimientos_DHI.git"  # ← REPO de tu proyecto en GitHub
 
 for p in [DATA_DIR, FIRMAS_DIR, TEMPLATES_DIR, OUTPUT_DIR]:
     p.mkdir(parents=True, exist_ok=True)
@@ -578,7 +582,16 @@ def api_generar():
     def _norm(s):
         s = unicodedata.normalize("NFD", s.lower())
         return "".join(c for c in s if unicodedata.category(c) != "Mn")
-
+    
+    def _formatear_fecha(valor):
+        """Convierte 'yyyy-mm-dd' (input type=date) a 'dd/mm/aaaa'."""
+        if not valor:
+            return None
+        try:
+            return datetime.strptime(valor, "%Y-%m-%d").strftime("%d/%m/%Y")
+        except (ValueError, TypeError):
+            return None
+    
     def find_template(nombre):
         p = TEMPLATES_DIR / f"{nombre}.docx"
         if p.exists(): return p
@@ -637,7 +650,7 @@ def api_generar():
         "enfermero":                 enf_data.get("nombre", data.get("enfermero", "")),
         "cedula_enfermero":          enf_data.get("cedula", ""),
         "firma_enfermero":           get_firma_inline(enf_data.get("firma", "")),
-        "fecha":                     datetime.now().strftime("%d/%m/%Y"),
+        "fecha":                     _formatear_fecha(data.get("fecha")) or datetime.now().strftime("%d/%m/%Y"),
         # Menor de edad — puede venir inline o desde el paciente seleccionado
         "menor_nombre":              data.get("menor_nombre", ""),
         "cedula_menor":              data.get("cedula_menor", ""),

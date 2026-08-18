@@ -658,13 +658,13 @@ body {
 }
 
 .btn-ghost {
-  background: transparent;
+  background: #e8eef0;
   color: var(--text2);
   border: 1px solid var(--border2);
 }
 
 .btn-ghost:hover {
-  background: var(--surface2);
+  background: #d0dae5;
   color: var(--text);
   border-color: var(--border2);
 }

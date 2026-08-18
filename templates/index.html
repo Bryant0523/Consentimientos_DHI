@@ -109,14 +109,14 @@
                             </div>
 
                             <!-- Chip de paciente seleccionado -->
-                            <div id="pacienteChip" class="patient-chip hidden">
+                            <div id="pacienteChip" class="patient-chip hidden" style="display:none">
                                 <div class="patient-chip-info">
                                     <span class="patient-chip-icon">👤</span>
                                     <div>
                                         <div class="patient-chip-name" id="chipNombre">—</div>
                                         <div class="patient-chip-sub" id="chipCedula">—</div>
                                     </div>
-                                    <span class="patient-chip-badge hidden" id="chipMenorBadge">Menor de edad</span>
+                                    <span class="patient-chip-badge hidden" id="chipMenorBadge" style="display:none">👶 Menor de edad</span>
                                 </div>
                                 <button class="patient-chip-clear" onclick="clearPaciente()" title="Limpiar selección">✕</button>
                             </div>
@@ -159,6 +159,11 @@
                                     <div class="dropdown-list hidden" id="enfermeroDropdown"></div>
                                 </div>
                                 <input type="hidden" id="enfermeroSelected">
+                            </div>
+                            
+                            <div class="field-group">
+                                <label class="field-label">Fecha del consentimiento <span class="req">*</span></label>
+                                <input type="date" id="fechaInput" class="field-input">
                             </div>
                         </div>
                     </div>
@@ -498,35 +503,34 @@
 
                 <div id="pmPacienteMainSection">
                     <!-- Datos básicos del paciente -->
-                    <div class="modal-section-label">Datos del paciente</div>
+                    <div class="modal-section-label" id="pmMainSectionLabel">Datos del paciente</div>
 
-                    <div class="field-row-2">
-                        <div class="field-group">
-                            <label class="field-label">Nombre completo <span class="req">*</span></label>
-                            <input type="text" id="pmNombre" class="field-input" placeholder="Nombre completo">
-                        </div>
-                        <div class="field-group">
-                            <label class="field-label">Cédula <span class="req">*</span></label>
-                            <input type="text" id="pmCedula" class="field-input" placeholder="Número de cédula">
-                        </div>
+                <div class="field-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Nombre completo <span class="req">*</span></label>
+                        <input type="text" id="pmNombre" class="field-input" placeholder="Nombre completo">
                     </div>
-                    <div class="field-row-2">
-                        <div class="field-group">
-                            <label class="field-label">Lugar de expedición</label>
-                            <input type="text" id="pmLugar" class="field-input" placeholder="ej. Barranquilla">
-                        </div>
-                        <div class="field-group">
-                            <label class="field-label">Firma del paciente</label>
-                            <div class="firma-upload-area firma-compact" onclick="document.getElementById('pmFirmaFile').click()">
-                                <input type="file" id="pmFirmaFile" accept="image/*" style="display:none"
-                                    onchange="handlePmFirma('paciente', this)">
-                                <div class="firma-placeholder" id="pmFirmaPlaceholder">
-                                    <span>+ Cargar firma</span>
-                                </div>
-                                <img id="pmFirmaPreview" class="firma-preview hidden" alt="Firma paciente">
+                    <div class="field-group">
+                        <label class="field-label">Cédula / T.I <span class="req">*</span></label>
+                        <input type="text" id="pmCedula" class="field-input" placeholder="Número de documento">
+                    </div>
+                </div>
+                <div class="field-row-2">
+                    <div class="field-group">
+                        <label class="field-label">Lugar de expedición</label>
+                        <input type="text" id="pmLugar" class="field-input" placeholder="ej. Barranquilla">
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label" id="pmFirmaLabel">Firma del paciente</label>
+                        <div class="firma-upload-area firma-compact" onclick="document.getElementById('pmFirmaFile').click()">
+                            <input type="file" id="pmFirmaFile" accept="image/*" style="display:none"
+                                onchange="handlePmFirma('paciente', this)">
+                            <div class="firma-placeholder" id="pmFirmaPlaceholder">
+                                <span>+ Cargar firma</span>
                             </div>
-                            <input type="hidden" id="pmFirmaFilename">
+                            <img id="pmFirmaPreview" class="firma-preview hidden" alt="Firma paciente">
                         </div>
+                        <input type="hidden" id="pmFirmaFilename">
                     </div>
                 </div>
 
@@ -536,7 +540,7 @@
                         <span class="minor-toggle-icon">👶</span>
                         <div>
                             <div class="minor-toggle-title" id="pmMenorToggleTitle">Paciente menor de edad</div>
-                            <div class="minor-toggle-sub" id="pmMenorToggleSub">Activa para registrar datos del acudiente</div>
+                            <div class="minor-toggle-sub" id="pmMenorToggleSub">Activa si el paciente es menor de edad</div>
                         </div>
                     </div>
                     <label class="ios-toggle">
@@ -545,39 +549,10 @@
                     </label>
                 </div>
 
-                <!-- Sección menor + acudiente (colapsable) -->
+                </div><!-- /pmPacienteMainSection -->
+
+                <!-- Sección acudiente (colapsable) -->
                 <div id="pmMenorSection" class="collapsed">
-                    <div class="modal-section-divider">Datos del menor</div>
-
-                    <div class="field-row-2">
-                        <div class="field-group">
-                            <label class="field-label">Nombre del menor <span class="req">*</span></label>
-                            <input type="text" id="pmMenorNombre" class="field-input" placeholder="Nombre completo del menor">
-                        </div>
-                        <div class="field-group">
-                            <label class="field-label">T.I / Registro civil <span class="req">*</span></label>
-                            <input type="text" id="pmMenorCedula" class="field-input" placeholder="Número">
-                        </div>
-                    </div>
-                    <div class="field-row-2">
-                        <div class="field-group">
-                            <label class="field-label">Lugar de expedición</label>
-                            <input type="text" id="pmMenorLugar" class="field-input" placeholder="Ciudad">
-                        </div>
-                        <div class="field-group">
-                            <label class="field-label">Firma del menor</label>
-                            <div class="firma-upload-area firma-compact" onclick="document.getElementById('pmMenorFirmaFile').click()">
-                                <input type="file" id="pmMenorFirmaFile" accept="image/*" style="display:none"
-                                    onchange="handlePmFirma('menor', this)">
-                                <div class="firma-placeholder" id="pmMenorFirmaPlaceholder">
-                                    <span>+ Cargar firma</span>
-                                </div>
-                                <img id="pmMenorFirmaPreview" class="firma-preview hidden" alt="Firma menor">
-                            </div>
-                            <input type="hidden" id="pmMenorFirmaFilename">
-                        </div>
-                    </div>
-
                     <div class="modal-section-divider">Datos del acudiente / representante legal</div>
 
                     <div class="field-row-2">
@@ -613,6 +588,8 @@
                         <input type="hidden" id="pmAcudienteFirmaFilename">
                     </div>
                 </div>
+
+            </div>
 
             </div>
             <div class="modal-footer">
