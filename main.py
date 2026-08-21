@@ -56,6 +56,8 @@ UPDATE_TEMP_DIR = Path(tempfile.gettempdir()) / "consentimientos_dhi_update"
 update_state = {
     "checking": False,
     "available": False,
+    "status": "unknown",
+    "current_version": APP_VERSION,
     "latest_version": None,
     "release_notes": "",
     "download_url": None,
@@ -1154,10 +1156,15 @@ def api_check_update():
         exe_asset = next((a for a in assets if a["name"].lower().endswith(".exe")), None)
 
         es_mas_nueva = _parse_version(tag) > _parse_version(APP_VERSION)
+        estado = "update_available" if es_mas_nueva and exe_asset else "up_to_date"
+        if es_mas_nueva and not exe_asset:
+            estado = "update_unavailable"
 
         update_state.update({
             "checking": False,
             "available": bool(es_mas_nueva and exe_asset),
+            "status": estado,
+            "current_version": APP_VERSION,
             "latest_version": tag,
             "release_notes": (data.get("body") or "")[:500],
             "download_url": exe_asset["browser_download_url"] if exe_asset else None,

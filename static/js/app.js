@@ -1050,6 +1050,10 @@ async function checkForUpdates() {
     if (st.available && !updateDismissed) {
       document.getElementById('updateVersion').textContent = st.latest_version || '';
       document.getElementById('updateBanner').classList.remove('hidden');
+    } else if (st.status === 'up_to_date') {
+      toast('Aplicación actualizada', `Tienes instalada la versión ${st.current_version || ''}`, 'success');
+    } else if (st.status === 'update_unavailable') {
+      toast('Actualización disponible', `Existe ${st.latest_version}, pero la release no incluye un ejecutable para actualizar automáticamente`, 'warn');
     }
   } catch(e) {
     console.error('check-update error:', e);
