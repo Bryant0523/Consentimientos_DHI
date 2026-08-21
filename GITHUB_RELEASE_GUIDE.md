@@ -1,9 +1,9 @@
-# 📋 Guía: Crear Release v2.4 en GitHub
+# 📋 Guía: Crear Release v2.6 en GitHub
 
 ## Paso 1: Preparar el archivo
 ✅ El archivo ZIP está listo:
 ```
-ConsentimientosDHI-v2.4.zip (63 MB)
+ConsentimientosDHI-v2.6.zip (63 MB)
 ```
 
 **Contenido del ZIP:**
@@ -37,17 +37,17 @@ ConsentimientosDHI/
 
 **Tag version:**
 ```
-v2.4
+v2.6
 ```
 
 **Release title:**
 ```
-ConsentimientosDHI v2.4 - Sistema de Consentimientos Médicos
+ConsentimientosDHI v2.6 - Sistema de Consentimientos Médicos
 ```
 
 **Description (copia y pega esto):**
 ```
-## 🎉 Release v2.4 - Sistema de Consentimientos Médicos
+## 🎉 Release v2.6 - Sistema de Consentimientos Médicos
 
 ### ✨ Características incluidas
 - ✅ Generación automática de consentimientos desde plantillas DOCX
@@ -68,7 +68,7 @@ Este release incluye:
 - **Dependencias** - _internal/ con todas las librerías Python
 
 ### 🚀 Instalación rápida
-1. Descarga `ConsentimientosDHI-v2.4.zip`
+1. Descarga `ConsentimientosDHI-v2.6.zip`
 2. Descomprime la carpeta en tu PC
 3. Abre la carpeta descomprimida
 4. Haz doble clic en `ConsentimientosDHI.exe` para ejecutar
@@ -90,7 +90,7 @@ Consulta el [README.md](README.md) para:
 ### 🐛 Reportar problemas
 Si encuentras algún problema, abre un issue en el repositorio.
 
-**Versión**: v2.4  
+**Versión**: v2.6  
 **Fecha**: 2026-06-12  
 **Desarrollado para**: DHI - Restauración Capilar
 ```
@@ -104,15 +104,15 @@ Si encuentras algún problema, abre un issue en el repositorio.
    - O busca el botón **"Attach binaries"**
 2. Haz clic y selecciona:
    ```
-   C:\Users\DHISO\Desktop\Soporte\Programas\consentimientos_app\ConsentimientosDHI-v2.4.zip
+   C:\Users\DHISO\Desktop\Soporte\Programas\consentimientos_app\ConsentimientosDHI-v2.6.zip
    ```
 3. Espera a que se cargue (puede tardar unos segundos por el tamaño de ~63 MB)
 
 ### 3.2 Verificar antes de publicar
-- ✅ Tag: `v2.4`
-- ✅ Title: `ConsentimientosDHI v2.4 - Sistema de Consentimientos Médicos`
+- ✅ Tag: `v2.6`
+- ✅ Title: `ConsentimientosDHI v2.6 - Sistema de Consentimientos Médicos`
 - ✅ Description: Completa (ver arriba)
-- ✅ Archivo ZIP: `ConsentimientosDHI-v2.4.zip` visible en assets
+- ✅ Archivo ZIP: `ConsentimientosDHI-v2.6.zip` visible en assets
 
 ---
 
@@ -130,8 +130,8 @@ Si encuentras algún problema, abre un issue en el repositorio.
 
 Una vez publicado, verifica:
 1. Ve a `https://github.com/tu-usuario/consentimientos_app/releases`
-2. Deberías ver **v2.4** como el último release
-3. El archivo `ConsentimientosDHI-v2.4.zip` está disponible para descargar (63 MB)
+2. Deberías ver **v2.6** como el último release
+3. El archivo `ConsentimientosDHI-v2.6.zip` está disponible para descargar (63 MB)
 4. La descripción se muestra correctamente
 
 ---
@@ -140,7 +140,7 @@ Una vez publicado, verifica:
 
 El README ya fue actualizado con:
 - ✅ Nueva sección "Descarga e Instalación (Usuario Final)"
-- ✅ Link a releases: `[Releases](https://github.com/tu-usuario/consentimientos_app/releases/tag/v2.4)`
+- ✅ Link a releases: `[Releases](https://github.com/tu-usuario/consentimientos_app/releases/tag/v2.6)`
 - ✅ Instrucciones paso a paso para descomprimir y ejecutar
 - ✅ Requisitos del sistema (Windows 7+, 2GB RAM, 500MB disco)
 
@@ -161,8 +161,8 @@ gh auth login
 cd "C:\Users\DHISO\Desktop\Soporte\Programas\consentimientos_app"
 
 # 4. Crear el release con el ZIP
-gh release create v2.4 ConsentimientosDHI-v2.4.zip `
-  --title "ConsentimientosDHI v2.4 - Sistema de Consentimientos Médicos" `
+gh release create v2.6 ConsentimientosDHI-v2.6.zip `
+  --title "ConsentimientosDHI v2.6 - Sistema de Consentimientos Médicos" `
   --notes "Release con ejecutable portátil incluye plantillas, datos y todas las dependencias. Descomprimir y ejecutar ConsentimientosDHI.exe"
 ```
 
@@ -172,12 +172,12 @@ gh release create v2.4 ConsentimientosDHI-v2.4.zip `
 
 **Usuario descargará desde:**
 ```
-https://github.com/tu-usuario/consentimientos_app/releases/tag/v2.4
+https://github.com/tu-usuario/consentimientos_app/releases/tag/v2.6
 ```
 
 **Link directo para descargar:**
 ```
-https://github.com/tu-usuario/consentimientos_app/releases/download/v2.4/ConsentimientosDHI-v2.4.zip
+https://github.com/tu-usuario/consentimientos_app/releases/download/v2.6/ConsentimientosDHI-v2.6.zip
 ```
 
 **Después de descargar, el usuario:**
@@ -196,8 +196,8 @@ R: Sí, haz clic en los tres puntos (...) en el release y selecciona "Edit relea
 **P: ¿Puedo agregar más archivos al release?**  
 R: Sí, puedes cargar múltiples archivos (templates, documentación, etc.)
 
-**P: ¿Qué pasa si hay un error y necesito hacer v2.4.1?**  
-R: Simplemente crea un nuevo release con tag `v2.4.1`
+**P: ¿Qué pasa si hay un error y necesito hacer v2.6.1?**  
+R: Simplemente crea un nuevo release con tag `v2.6.1`
 
 ---
 

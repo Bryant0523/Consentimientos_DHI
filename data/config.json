@@ -5,6 +5,6 @@
     "signature_reuse_days": 1,
     "export_pdf": true,
     "export_docx": true,
-    "appearance": "light",
+    "appearance": "dark",
     "hospital_name": "Dhi Restauracion Capilar"
 }

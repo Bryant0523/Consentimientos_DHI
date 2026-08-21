@@ -13,10 +13,9 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('templates',    'templates'),
-        ('static',       'static'),
-        ('data',         'data'),
-        ('app_templates','app_templates'),
+        ('templates', 'templates'),
+        ('static', 'static'),
+        ('app_templates', 'app_templates'),
     ],
     hiddenimports=[
         'flask',

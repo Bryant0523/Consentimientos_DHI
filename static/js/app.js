@@ -1,6 +1,6 @@
 /* ════════════════════════════════════════════════
    Overtrack — Consentimientos Médicos
-   Frontend logic v2.5
+   Frontend logic v2.6
    ════════════════════════════════════════════════ */
 
 // ─── State ───────────────────────────────────────
@@ -9,6 +9,7 @@ const state = {
   enfermeros: [],
   pacientes:  [],
   plantillas: {},
+  plantillasList: [],
   historial:  [],
   config:     {},
   pacienteActivo: null,
@@ -16,9 +17,11 @@ const state = {
 
 // ─── Init ────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  applyTheme(document.documentElement.dataset.theme === 'dark');
   setupCombos();
   setupPatientSearch();
   setupSummaryUpdates();
+  setupFieldErrorClearing(); // ← agregado
   await cargarCategorias();
   initFecha();
   await loadAll();
@@ -36,11 +39,13 @@ async function loadAll() {
     state.enfermeros = enf;
     state.pacientes  = pac;
     state.config     = cfg;
+    applyTheme(cfg.appearance === 'dark');
 
     document.getElementById('outputFolder').value        = cfg.output_folder || '';
     document.getElementById('hospitalName').value        = cfg.hospital_name || '';
     document.getElementById('settingExportPdf').checked  = cfg.export_pdf  !== false;
     document.getElementById('settingExportDocx').checked = cfg.export_docx !== false;
+    document.getElementById('retentionDays').value        = cfg.retention_days ?? 30; // ← agregado
 
     updateSummary();
     renderPersonal();
@@ -51,6 +56,8 @@ async function loadAll() {
         toast('⚠ Sin conversor PDF', 'Instala LibreOffice para exportar PDF con el diseño de la plantilla', 'warn');
       }
     } catch(e) { /* no crítico */ }
+
+    checkForUpdates();
 
   } catch(e) {
     console.error('loadAll error:', e);
@@ -95,10 +102,11 @@ function switchTab(tab, navEl) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   (navEl || document.querySelector(`[data-tab="${tab}"]`))?.classList.add('active');
   document.getElementById(`tab-${tab}`)?.classList.add('active');
-  const titles = { inicio: 'Nuevo Consentimiento', personal: 'Personal Médico', historial: 'Historial', ajustes: 'Configuración' };
+    const titles = { inicio: 'Nuevo Consentimiento', personal: 'Personal Médico', historial: 'Historial', ajustes: 'Configuración', plantillas: 'Plantillas' };
   document.getElementById('pageTitle').textContent = titles[tab] || '';
-  if (tab === 'historial') loadHistorial();
-  if (tab === 'personal')  renderPersonal();
+  if (tab === 'historial')  loadHistorial();
+  if (tab === 'personal')   renderPersonal();
+  if (tab === 'plantillas') loadPlantillasList();
 }
 
 function toggleSidebar() {
@@ -389,6 +397,38 @@ function togglePmMenor() {
   setPatientModalMinorMode(on);
 }
 
+// ─── Validación visual ───────────────────────────
+function clearFieldErrors() {
+  document.querySelectorAll('.field-input.field-error').forEach(el => el.classList.remove('field-error'));
+  document.querySelectorAll('.field-error-msg').forEach(el => el.remove());
+}
+
+function clearFieldError(inputId) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  el.classList.remove('field-error');
+  const next = el.nextElementSibling;
+  if (next && next.classList.contains('field-error-msg')) next.remove();
+}
+
+function showFieldError(inputId, msg) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  el.classList.add('field-error');
+  const errEl = document.createElement('div');
+  errEl.className = 'field-error-msg';
+  errEl.textContent = msg;
+  el.insertAdjacentElement('afterend', errEl);
+}
+
+function setupFieldErrorClearing() {
+  ['plantillaSelect', 'pacienteSearch', 'medicoInput', 'fechaInput'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', () => clearFieldError(id));
+    el.addEventListener('change', () => clearFieldError(id));
+  });
+}
 async function handlePmFirma(tipo, input) {
   const file = input.files[0];
   if (!file) return;
@@ -483,22 +523,34 @@ async function savePatient() {
 // ─── Generar consentimiento ───────────────────────
 async function generarConsentimiento() {
   const btn = document.getElementById('btnGenerar');
+  clearFieldErrors();
+  let hasError = false;
 
   const procedimiento = document.getElementById('plantillaSelect').value;
-  if (!procedimiento) { toast('Campo requerido', 'Selecciona una plantilla', 'error'); return; }
+  if (!procedimiento) { showFieldError('plantillaSelect', 'Selecciona una plantilla'); hasError = true; }
 
-  const fechaValue = document.getElementById('fechaInput').value;
-  if (!fechaValue) { toast('Campo requerido', 'Selecciona la fecha del consentimiento', 'error'); return; }
-
-  // Paciente: preferir el activo, sino lo que haya en los inputs
   const pac        = state.pacienteActivo;
   const searchText = document.getElementById('pacienteSearch').value.trim();
   const nombre     = pac ? pac.nombre : searchText;
   const cedula     = pac ? pac.cedula : (/^[\d\s\-]+$/.test(searchText) ? searchText : '');
 
-  if (!nombre) { toast('Campo requerido', 'Selecciona o escribe el nombre del paciente', 'error'); return; }
-  if (!cedula)  { toast('Campo requerido', 'La cédula del paciente es obligatoria', 'error'); return; }
+  if (!nombre) {
+    showFieldError('pacienteSearch', 'Escribe o selecciona el nombre del paciente'); hasError = true;
+  } else if (!cedula) {
+    showFieldError('pacienteSearch', 'La cédula del paciente es obligatoria'); hasError = true;
+  }
 
+  const doctor = document.getElementById('medicoInput').value.trim();
+  if (!doctor) { showFieldError('medicoInput', 'Selecciona el médico tratante'); hasError = true; }
+
+  const fechaValue = document.getElementById('fechaInput')?.value;
+  if (!fechaValue) { showFieldError('fechaInput', 'Selecciona la fecha del consentimiento'); hasError = true; }
+
+  if (hasError) {
+    toast('Campos requeridos', 'Revisa los campos marcados en rojo', 'error');
+    document.querySelector('.field-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
   btn.classList.add('loading');
   btn.disabled = true;
 
@@ -529,6 +581,7 @@ async function generarConsentimiento() {
     const result = await api('/api/generar', 'POST', payload);
     showResult(true, result.message, result.pdf || result.docx);
     toast('¡Listo!', result.message, 'success');
+    loadStats();
     if (!result.pdf_ok && result.pdf_error) {
       toast('PDF no generado', result.pdf_error, 'warn');
     }
@@ -865,11 +918,13 @@ function exportHistorial() { window.open('/api/historial/export', '_blank'); }
 // ─── Settings ────────────────────────────────────
 async function saveSettings() {
   const cfg = {
-    output_folder: document.getElementById('outputFolder').value.trim(),
-    hospital_name: document.getElementById('hospitalName').value.trim(),
-    export_pdf:    document.getElementById('settingExportPdf').checked,
-    export_docx:   document.getElementById('settingExportDocx').checked,
+    output_folder:  document.getElementById('outputFolder').value.trim(),
+    hospital_name:  document.getElementById('hospitalName').value.trim(),
+    export_pdf:     document.getElementById('settingExportPdf').checked,
+    export_docx:    document.getElementById('settingExportDocx').checked,
+    retention_days: parseInt(document.getElementById('retentionDays').value, 10) || 0, // ← agregado
   };
+  
   const pwd = document.getElementById('adminPassword').value.trim();
   if (pwd) cfg.admin_password = pwd;
   try {
@@ -984,3 +1039,301 @@ document.addEventListener('keydown', e => {
     if (document.getElementById('tab-inicio').classList.contains('active')) generarConsentimiento();
   }
 });
+
+// ─── Actualizaciones ─────────────────────────────
+let updatePollInterval = null;
+let updateDismissed = false;
+
+async function checkForUpdates() {
+  try {
+    const st = await api('/api/check-update');
+    if (st.available && !updateDismissed) {
+      document.getElementById('updateVersion').textContent = st.latest_version || '';
+      document.getElementById('updateBanner').classList.remove('hidden');
+    }
+  } catch(e) {
+    console.error('check-update error:', e);
+  }
+}
+
+function dismissUpdateBanner() {
+  updateDismissed = true;
+  document.getElementById('updateBanner').classList.add('hidden');
+}
+
+async function handleUpdateClick() {
+  const btn = document.getElementById('updateActionBtn');
+  const sub = document.getElementById('updateSub');
+  const progressWrap = document.getElementById('updateProgressWrap');
+
+  btn.disabled = true;
+  sub.textContent = 'Descargando actualización...';
+  progressWrap.classList.remove('hidden');
+
+  try {
+    await api('/api/download-update', 'POST');
+    updatePollInterval = setInterval(pollUpdateStatus, 800);
+  } catch(e) {
+    toast('Error al actualizar', e.message, 'error');
+    btn.disabled = false;
+  }
+}
+
+async function pollUpdateStatus() {
+  try {
+    const st = await api('/api/update-status');
+    const fill = document.getElementById('updateProgressFill');
+    const text = document.getElementById('updateProgressText');
+    const sub  = document.getElementById('updateSub');
+    const btn  = document.getElementById('updateActionBtn');
+
+    if (fill) fill.style.width = `${st.progress || 0}%`;
+    if (text) text.textContent = `${st.progress || 0}%`;
+
+    if (st.error) {
+      clearInterval(updatePollInterval);
+      toast('Error al descargar', st.error, 'error');
+      btn.disabled = false;
+      sub.textContent = 'Haz clic para descargar e instalar';
+      return;
+    }
+
+    if (!st.downloading && st.downloaded_path) {
+      clearInterval(updatePollInterval);
+      sub.textContent = 'Descarga completa';
+      btn.textContent = 'Reiniciar e instalar';
+      btn.disabled = false;
+      btn.onclick = applyUpdate;
+    }
+  } catch(e) {
+    console.error('poll update-status error:', e);
+  }
+}
+
+async function applyUpdate() {
+  if (!confirm('La aplicación se cerrará para instalar la actualización. ¿Continuar?')) return;
+  try {
+    await api('/api/apply-update', 'POST');
+    document.body.innerHTML = '<div style="padding:40px;text-align:center;font-family:sans-serif">Instalando actualización... puedes cerrar esta ventana.</div>';
+  } catch(e) {
+    toast('Error', e.message, 'error');
+  }
+}
+
+// ─── Tema (claro/oscuro) ─────────────────────────
+function applyTheme(isDark) {
+  document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+
+  const moon = document.getElementById('themeIconMoon');
+  const sun  = document.getElementById('themeIconSun');
+  if (moon && sun) {
+    moon.classList.toggle('hidden', isDark);
+    sun.classList.toggle('hidden', !isDark);
+  }
+
+  const chk = document.getElementById('settingDarkMode');
+  if (chk) chk.checked = isDark;
+}
+
+async function toggleTheme() {
+  const isDark = document.documentElement.dataset.theme !== 'dark';
+  applyTheme(isDark);
+  try {
+    await api('/api/config', 'POST', { appearance: isDark ? 'dark' : 'light' });
+    state.config.appearance = isDark ? 'dark' : 'light';
+  } catch(e) {
+    toast('Error', 'No se pudo guardar el tema', 'error');
+  }
+}
+
+async function limpiarAhora() {
+  if (!confirm('¿Eliminar ahora los PDF/DOCX locales que superen los días de retención configurados?')) return;
+  try {
+    const r = await api('/api/limpiar-archivos', 'POST');
+    toast('Limpieza completada', `${r.eliminados} archivo(s) eliminado(s)`, 'success');
+  } catch(e) {
+    toast('Error', e.message, 'error');
+  }
+}
+
+async function loadStats() {
+  try {
+    const s = await api('/api/stats');
+    document.getElementById('statHoy').textContent = s.hoy;
+    document.getElementById('statMes').textContent = s.mes;
+    const topEl = document.getElementById('statTopMedicos');
+    if (s.top_medicos && s.top_medicos.length) {
+      topEl.innerHTML = s.top_medicos.map(m =>
+        `<div class="stat-top-item"><span>${escHtml(m.nombre)}</span><strong>${m.cantidad}</strong></div>`
+      ).join('');
+    } else {
+      topEl.textContent = 'Sin datos este mes';
+    }
+  } catch(e) {
+    console.error('loadStats error:', e);
+  }
+}
+
+// ─── Import/Export Médicos y Enfermeros ─────────
+function exportPersonal(tipo) {
+  window.open(`/api/${tipo}s/export`, '_blank');
+}
+
+async function handleImportPersonal(tipo, input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const label = tipo === 'medico' ? 'médicos' : 'enfermeros(as)';
+  const reemplazar = confirm(
+    `Vas a importar ${label} desde "${file.name}".\n\n` +
+    `Aceptar = REEMPLAZAR toda la lista actual por la del CSV.\n` +
+    `Cancelar = AGREGAR/ACTUALIZAR (mantiene los existentes, actualiza por cédula si coincide, agrega los nuevos).`
+  );
+
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('modo', reemplazar ? 'reemplazar' : 'merge');
+
+  try {
+    const r = await fetch(`/api/${tipo}s/import`, { method: 'POST', body: fd });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Error al importar');
+
+    if (reemplazar) {
+      toast('Importación completa', `Lista reemplazada: ${data.total} registro(s)`, 'success');
+    } else {
+      toast('Importación completa', `${data.agregados} agregado(s), ${data.actualizados} actualizado(s)`, 'success');
+    }
+
+    const [med, enf] = await Promise.all([api('/api/medicos'), api('/api/enfermeros')]);
+    state.medicos = med; state.enfermeros = enf;
+    renderPersonal();
+  } catch(e) {
+    toast('Error al importar', e.message, 'error');
+  } finally {
+    input.value = ''; // permite volver a subir el mismo archivo si hace falta
+  }
+}
+
+// ─── Gestión de Plantillas ────────────────────────
+async function loadPlantillasList() {
+  try {
+    state.plantillasList = await api('/api/plantillas/list');
+    renderPlantillasTable();
+  } catch(e) {
+    toast('Error', e.message, 'error');
+  }
+}
+
+function renderPlantillasTable() {
+  const tbody = document.getElementById('plantillasTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (!state.plantillasList || !state.plantillasList.length) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--text3);padding:24px">Sin plantillas registradas</td></tr>`;
+    return;
+  }
+  state.plantillasList.forEach((p, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escHtml(p.categoria)}</td>
+      <td>${escHtml(p.nombre)}</td>
+      <td><div class="table-actions">
+        <button class="btn btn-sm btn-ghost btn-icon" onclick="openPlantillaModal(${idx})" title="Editar">✏️</button>
+        <button class="btn btn-sm btn-danger btn-icon" onclick="deletePlantilla(${idx})" title="Eliminar">🗑</button>
+      </div></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+async function populatePlantillaCategoriaDatalist() {
+  try {
+    const categorias = await api('/api/plantillas/categorias');
+    const dl = document.getElementById('plmCategoriaList');
+    if (dl) dl.innerHTML = categorias.map(c => `<option value="${escHtml(c)}">`).join('');
+  } catch(e) { /* no crítico */ }
+}
+
+function openPlantillaModal(idx = null) {
+  document.getElementById('plmModoOriginal').value = idx !== null ? 'editar' : 'crear';
+  document.getElementById('plmCategoriaActual').value = '';
+  document.getElementById('plmNombreActual').value = '';
+  document.getElementById('plmCategoria').value = '';
+  document.getElementById('plmNombre').value = '';
+  document.getElementById('plmFile').value = '';
+
+  const fileHint = document.getElementById('plmFileHint');
+
+  populatePlantillaCategoriaDatalist();
+
+  if (idx !== null) {
+    const p = state.plantillasList[idx];
+    document.getElementById('plantillaModalTitle').textContent = 'Editar Plantilla';
+    document.getElementById('plmCategoriaActual').value = p.categoria;
+    document.getElementById('plmNombreActual').value = p.nombre;
+    document.getElementById('plmCategoria').value = p.categoria;
+    document.getElementById('plmNombre').value = p.nombre;
+    fileHint.textContent = 'Deja vacío para conservar el archivo actual, o sube uno nuevo para reemplazarlo';
+  } else {
+    document.getElementById('plantillaModalTitle').textContent = 'Agregar Plantilla';
+    fileHint.textContent = 'Selecciona el archivo .docx de la plantilla';
+  }
+
+  document.getElementById('plantillaModalOverlay').classList.remove('hidden');
+  setTimeout(() => document.getElementById('plmCategoria').focus(), 100);
+}
+
+function closePlantillaModal() {
+  document.getElementById('plantillaModalOverlay').classList.add('hidden');
+}
+
+async function savePlantilla() {
+  const modo      = document.getElementById('plmModoOriginal').value;
+  const categoria = document.getElementById('plmCategoria').value.trim();
+  const nombre    = document.getElementById('plmNombre').value.trim();
+  const file      = document.getElementById('plmFile').files[0];
+
+  if (!categoria || !nombre) {
+    toast('Campos requeridos', 'Categoría y nombre son obligatorios', 'error');
+    return;
+  }
+  if (modo === 'crear' && !file) {
+    toast('Archivo requerido', 'Debes subir el archivo .docx de la plantilla', 'error');
+    return;
+  }
+
+  const fd = new FormData();
+  fd.append('modo', modo);
+  fd.append('categoria', categoria);
+  fd.append('nombre', nombre);
+  if (modo === 'editar') {
+    fd.append('categoria_actual', document.getElementById('plmCategoriaActual').value);
+    fd.append('nombre_actual', document.getElementById('plmNombreActual').value);
+  }
+  if (file) fd.append('file', file);
+
+  try {
+    const r = await fetch('/api/plantillas/save', { method: 'POST', body: fd });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Error al guardar la plantilla');
+    toast('Plantilla guardada', `${nombre} (${categoria})`, 'success');
+    closePlantillaModal();
+    await loadPlantillasList();
+    await cargarCategorias(); // refresca los selects del formulario principal
+  } catch(e) {
+    toast('Error', e.message, 'error');
+  }
+}
+
+async function deletePlantilla(idx) {
+  const p = state.plantillasList[idx];
+  if (!confirm(`¿Eliminar la plantilla "${p.nombre}" de la categoría "${p.categoria}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    await api('/api/plantillas/delete', 'POST', { categoria: p.categoria, nombre: p.nombre });
+    toast('Plantilla eliminada', '', 'success');
+    await loadPlantillasList();
+    await cargarCategorias();
+  } catch(e) {
+    toast('Error', e.message, 'error');
+  }
+}

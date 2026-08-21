@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="{{ config.appearance }}">
 
 <head>
     <meta charset="UTF-8">
@@ -29,25 +29,37 @@
         <nav class="sidebar-nav">
             <a href="#" class="nav-item active" data-tab="inicio">
                 <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                    <path
+                        d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                 </svg>
                 <span>Inicio</span>
             </a>
             <a href="#" class="nav-item" data-tab="personal">
                 <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                    <path
+                        d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
                 </svg>
                 <span>Personal</span>
             </a>
             <a href="#" class="nav-item" data-tab="historial">
                 <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd"
+                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                        clip-rule="evenodd" />
                 </svg>
                 <span>Historial</span>
             </a>
+                        <a href="#" class="nav-item" data-tab="plantillas">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" clip-rule="evenodd" />
+                </svg>
+                <span>Plantillas</span>
+            </a>
             <a href="#" class="nav-item" data-tab="ajustes">
                 <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd"
+                        d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                        clip-rule="evenodd" />
                 </svg>
                 <span>Ajustes</span>
             </a>
@@ -56,11 +68,13 @@
         <div class="sidebar-footer">
             <a href="#" class="nav-item nav-exit" onclick="cerrarAplicacion()">
                 <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M3 4a2 2 0 012-2h5a1 1 0 110 2H5v12h5a1 1 0 110 2H5a2 2 0 01-2-2V4zm10.293 3.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L15.586 11H8a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd"
+                        d="M3 4a2 2 0 012-2h5a1 1 0 110 2H5v12h5a1 1 0 110 2H5a2 2 0 01-2-2V4zm10.293 3.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L15.586 11H8a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
                 </svg>
                 <span>Salir</span>
             </a>
-            <div class="version-badge">v2.5</div>
+            <div class="version-badge">{{ app_version }}</div>
         </div>
     </aside>
 
@@ -71,17 +85,76 @@
         <header class="topbar">
             <button class="menu-toggle" onclick="toggleSidebar()">
                 <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd"
+                        d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                        clip-rule="evenodd" />
                 </svg>
             </button>
             <h1 class="page-title" id="pageTitle">Nuevo Consentimiento</h1>
             <div class="topbar-actions">
+                <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Cambiar tema">
+                    <svg id="themeIconMoon" viewBox="0 0 20 20" fill="currentColor" class="theme-icon">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                    </svg>
+                    <svg id="themeIconSun" viewBox="0 0 20 20" fill="currentColor" class="theme-icon hidden">
+                        <path fill-rule="evenodd"
+                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
                 <div class="status-dot" id="statusDot" title="Sistema activo"></div>
             </div>
         </header>
 
+        <!-- ══ BANNER: ACTUALIZACIÓN DISPONIBLE ══════════════════════════════════ -->
+        <div class="update-banner hidden" id="updateBanner">
+            <div class="update-banner-info">
+                <span class="update-banner-icon">🚀</span>
+                <div>
+                    <div class="update-banner-title">Nueva versión disponible: <span id="updateVersion">—</span></div>
+                    <div class="update-banner-sub" id="updateSub">Haz clic para descargar e instalar</div>
+                </div>
+            </div>
+            <div class="update-banner-actions">
+                <div class="update-progress-wrap hidden" id="updateProgressWrap">
+                    <div class="update-progress-bar">
+                        <div class="update-progress-fill" id="updateProgressFill"></div>
+                    </div>
+                    <span id="updateProgressText">0%</span>
+                </div>
+                <button class="btn btn-sm btn-primary" id="updateActionBtn" onclick="handleUpdateClick()">Actualizar
+                    ahora</button>
+                <button class="btn btn-sm btn-ghost" onclick="dismissUpdateBanner()">Más tarde</button>
+            </div>
+        </div>
+
         <!-- ══ TAB: INICIO ══════════════════════════════════════════════════════ -->
         <section class="tab-content active" id="tab-inicio">
+
+            <div class="dashboard-stats" id="dashboardStats">
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div>
+                        <div class="stat-value" id="statHoy">—</div>
+                        <div class="stat-label">Hoy</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📆</div>
+                    <div>
+                        <div class="stat-value" id="statMes">—</div>
+                        <div class="stat-label">Este mes</div>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-wide">
+                    <div class="stat-icon">👨‍⚕️</div>
+                    <div style="flex:1">
+                        <div class="stat-label" style="margin-bottom:4px">Top médicos (mes)</div>
+                        <div id="statTopMedicos" class="stat-top-list">—</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-layout">
 
                 <!-- COLUMNA IZQUIERDA -->
@@ -92,7 +165,8 @@
                         <div class="card-header">
                             <span class="card-icon">🧑</span>
                             <h2>Paciente</h2>
-                            <button class="btn btn-sm btn-primary ml-auto" onclick="openPatientModal()">+ Crear paciente</button>
+                            <button class="btn btn-sm btn-primary ml-auto" onclick="openPatientModal()">+ Crear
+                                paciente</button>
                         </div>
                         <div class="card-body">
                             <input type="hidden" id="pacienteSelectedId">
@@ -116,9 +190,11 @@
                                         <div class="patient-chip-name" id="chipNombre">—</div>
                                         <div class="patient-chip-sub" id="chipCedula">—</div>
                                     </div>
-                                    <span class="patient-chip-badge hidden" id="chipMenorBadge" style="display:none">👶 Menor de edad</span>
+                                    <span class="patient-chip-badge hidden" id="chipMenorBadge"
+                                        style="display:none">👶 Menor de edad</span>
                                 </div>
-                                <button class="patient-chip-clear" onclick="clearPaciente()" title="Limpiar selección">✕</button>
+                                <button class="patient-chip-clear" onclick="clearPaciente()"
+                                    title="Limpiar selección">✕</button>
                             </div>
                         </div>
                     </div>
@@ -160,9 +236,10 @@
                                 </div>
                                 <input type="hidden" id="enfermeroSelected">
                             </div>
-                            
+
                             <div class="field-group">
-                                <label class="field-label">Fecha del consentimiento <span class="req">*</span></label>
+                                <label class="field-label">Fecha del consentimiento <span
+                                        class="req">*</span></label>
                                 <input type="date" id="fechaInput" class="field-input">
                             </div>
                         </div>
@@ -266,7 +343,15 @@
                     <div class="card-header">
                         <span class="card-icon">👨‍⚕️</span>
                         <h2>Médicos</h2>
-                        <button class="btn btn-sm btn-primary ml-auto" onclick="openModal('medico')">+ Agregar</button>
+                        <div class="ml-auto" style="display:flex;gap:8px">
+                            <input type="file" id="medicosImportFile" accept=".csv" style="display:none"
+                                onchange="handleImportPersonal('medico', this)">
+                            <button class="btn btn-sm btn-ghost"
+                                onclick="document.getElementById('medicosImportFile').click()">⬆ Importar CSV</button>
+                            <button class="btn btn-sm btn-ghost" onclick="exportPersonal('medico')">⬇ Backup
+                                CSV</button>
+                            <button class="btn btn-sm btn-primary" onclick="openModal('medico')">+ Agregar</button>
+                        </div>
                     </div>
                     <div class="card-body p0">
                         <table class="data-table" id="medicosTable">
@@ -288,7 +373,17 @@
                     <div class="card-header">
                         <span class="card-icon">👩‍⚕️</span>
                         <h2>Enfermeros(as)</h2>
-                        <button class="btn btn-sm btn-primary ml-auto" onclick="openModal('enfermero')">+ Agregar</button>
+                        <div class="ml-auto" style="display:flex;gap:8px">
+                            <input type="file" id="enfermerosImportFile" accept=".csv" style="display:none"
+                                onchange="handleImportPersonal('enfermero', this)">
+                            <button class="btn btn-sm btn-ghost"
+                                onclick="document.getElementById('enfermerosImportFile').click()">⬆ Importar
+                                CSV</button>
+                            <button class="btn btn-sm btn-ghost" onclick="exportPersonal('enfermero')">⬇ Backup
+                                CSV</button>
+                            <button class="btn btn-sm btn-primary" onclick="openModal('enfermero')">+
+                                Agregar</button>
+                        </div>
                     </div>
                     <div class="card-body p0">
                         <table class="data-table" id="enfermerosTable">
@@ -310,7 +405,8 @@
                     <div class="card-header">
                         <span class="card-icon">👤</span>
                         <h2>Pacientes</h2>
-                        <button class="btn btn-sm btn-primary ml-auto" onclick="openPatientModal()">+ Agregar</button>
+                        <button class="btn btn-sm btn-primary ml-auto" onclick="openPatientModal()">+
+                            Agregar</button>
                     </div>
                     <div class="card-body p0">
                         <table class="data-table" id="pacientesTable">
@@ -338,9 +434,8 @@
                         <span class="card-icon">📋</span>
                         <h2>Historial de Consentimientos</h2>
                         <div style="display:flex;gap:8px;margin-left:auto;align-items:center;">
-                            <input type="text" id="historialSearch" class="field-input"
-                                placeholder="Buscar..." style="width:200px"
-                                oninput="filterHistorial()">
+                            <input type="text" id="historialSearch" class="field-input" placeholder="Buscar..."
+                                style="width:200px" oninput="filterHistorial()">
                             <button class="btn btn-sm btn-ghost" onclick="exportHistorial()">⬇ Exportar CSV</button>
                             <button class="btn btn-sm btn-danger" onclick="clearHistorial()">🗑 Vaciar</button>
                         </div>
@@ -369,10 +464,50 @@
                 </div>
             </div>
         </section>
+                <!-- ══ TAB: PLANTILLAS ══════════════════════════════════════════════════ -->
+        <section class="tab-content" id="tab-plantillas">
+            <div class="personal-layout">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📄</span>
+                        <h2>Plantillas de Consentimiento</h2>
+                        <button class="btn btn-sm btn-primary ml-auto" onclick="openPlantillaModal()">+ Agregar plantilla</button>
+                    </div>
+                    <div class="card-body p0">
+                        <table class="data-table" id="plantillasTable">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Nombre</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="plantillasTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- ══ TAB: AJUSTES ═════════════════════════════════════════════════════ -->
         <section class="tab-content" id="tab-ajustes">
             <div class="settings-layout">
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">🎨</span>
+                        <h2>Apariencia</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="toggle-row">
+                            <span>Modo oscuro</span>
+                            <label class="ios-toggle">
+                                <input type="checkbox" id="settingDarkMode" onchange="toggleTheme()">
+                                <span class="ios-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="card">
                     <div class="card-header">
@@ -383,9 +518,11 @@
                         <div class="field-group">
                             <label class="field-label">Ruta de exportación</label>
                             <div class="path-input-wrap">
-                                <input type="text" id="outputFolder" class="field-input" placeholder="Ruta de carpeta...">
+                                <input type="text" id="outputFolder" class="field-input"
+                                    placeholder="Ruta de carpeta...">
                             </div>
-                            <p class="field-hint">Los archivos generados se guardan en subcarpetas por procedimiento dentro de esta ruta.</p>
+                            <p class="field-hint">Los archivos generados se guardan en subcarpetas por procedimiento
+                                dentro de esta ruta.</p>
                         </div>
                     </div>
                 </div>
@@ -411,8 +548,27 @@
                     <div class="card-body">
                         <div class="field-group">
                             <label class="field-label">Contraseña de administrador</label>
-                            <input type="password" id="adminPassword" class="field-input" placeholder="Nueva contraseña">
+                            <input type="password" id="adminPassword" class="field-input"
+                                placeholder="Nueva contraseña">
                         </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">🧹</span>
+                        <h2>Limpieza automática</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="field-group">
+                            <label class="field-label">Eliminar PDF/DOCX locales después de (días)</label>
+                            <input type="number" id="retentionDays" class="field-input" min="0"
+                                placeholder="0 = desactivado">
+                            <p class="field-hint">Solo borra los archivos del disco — los registros del Historial se
+                                conservan. Usa 0 para desactivar.</p>
+                        </div>
+                        <button class="btn btn-ghost" style="width:auto" onclick="limpiarAhora()">🧹 Limpiar
+                            ahora</button>
                     </div>
                 </div>
 
@@ -505,49 +661,51 @@
                     <!-- Datos básicos del paciente -->
                     <div class="modal-section-label" id="pmMainSectionLabel">Datos del paciente</div>
 
-                <div class="field-row-2">
-                    <div class="field-group">
-                        <label class="field-label">Nombre completo <span class="req">*</span></label>
-                        <input type="text" id="pmNombre" class="field-input" placeholder="Nombre completo">
+                    <div class="field-row-2">
+                        <div class="field-group">
+                            <label class="field-label">Nombre completo <span class="req">*</span></label>
+                            <input type="text" id="pmNombre" class="field-input" placeholder="Nombre completo">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Cédula / T.I <span class="req">*</span></label>
+                            <input type="text" id="pmCedula" class="field-input" placeholder="Número de documento">
+                        </div>
                     </div>
-                    <div class="field-group">
-                        <label class="field-label">Cédula / T.I <span class="req">*</span></label>
-                        <input type="text" id="pmCedula" class="field-input" placeholder="Número de documento">
-                    </div>
-                </div>
-                <div class="field-row-2">
-                    <div class="field-group">
-                        <label class="field-label">Lugar de expedición</label>
-                        <input type="text" id="pmLugar" class="field-input" placeholder="ej. Barranquilla">
-                    </div>
-                    <div class="field-group">
-                        <label class="field-label" id="pmFirmaLabel">Firma del paciente</label>
-                        <div class="firma-upload-area firma-compact" onclick="document.getElementById('pmFirmaFile').click()">
-                            <input type="file" id="pmFirmaFile" accept="image/*" style="display:none"
-                                onchange="handlePmFirma('paciente', this)">
-                            <div class="firma-placeholder" id="pmFirmaPlaceholder">
-                                <span>+ Cargar firma</span>
+                    <div class="field-row-2">
+                        <div class="field-group">
+                            <label class="field-label">Lugar de expedición</label>
+                            <input type="text" id="pmLugar" class="field-input" placeholder="ej. Barranquilla">
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label" id="pmFirmaLabel">Firma del paciente</label>
+                            <div class="firma-upload-area firma-compact"
+                                onclick="document.getElementById('pmFirmaFile').click()">
+                                <input type="file" id="pmFirmaFile" accept="image/*" style="display:none"
+                                    onchange="handlePmFirma('paciente', this)">
+                                <div class="firma-placeholder" id="pmFirmaPlaceholder">
+                                    <span>+ Cargar firma</span>
+                                </div>
+                                <img id="pmFirmaPreview" class="firma-preview hidden" alt="Firma paciente">
                             </div>
-                            <img id="pmFirmaPreview" class="firma-preview hidden" alt="Firma paciente">
+                            <input type="hidden" id="pmFirmaFilename">
                         </div>
-                        <input type="hidden" id="pmFirmaFilename">
                     </div>
-                </div>
 
-                <!-- Toggle menor de edad -->
-                <div class="minor-toggle-row">
-                    <div class="minor-toggle-label">
-                        <span class="minor-toggle-icon">👶</span>
-                        <div>
-                            <div class="minor-toggle-title" id="pmMenorToggleTitle">Paciente menor de edad</div>
-                            <div class="minor-toggle-sub" id="pmMenorToggleSub">Activa si el paciente es menor de edad</div>
+                    <!-- Toggle menor de edad -->
+                    <div class="minor-toggle-row">
+                        <div class="minor-toggle-label">
+                            <span class="minor-toggle-icon">👶</span>
+                            <div>
+                                <div class="minor-toggle-title" id="pmMenorToggleTitle">Paciente menor de edad</div>
+                                <div class="minor-toggle-sub" id="pmMenorToggleSub">Activa si el paciente es menor de
+                                    edad</div>
+                            </div>
                         </div>
+                        <label class="ios-toggle">
+                            <input type="checkbox" id="pmEsMenor" onchange="togglePmMenor()">
+                            <span class="ios-slider"></span>
+                        </label>
                     </div>
-                    <label class="ios-toggle">
-                        <input type="checkbox" id="pmEsMenor" onchange="togglePmMenor()">
-                        <span class="ios-slider"></span>
-                    </label>
-                </div>
 
                 </div><!-- /pmPacienteMainSection -->
 
@@ -568,7 +726,8 @@
                     <div class="field-row-2">
                         <div class="field-group">
                             <label class="field-label">Parentesco</label>
-                            <input type="text" id="pmAcudienteParentesco" class="field-input" placeholder="ej. Madre, Padre, Tutor">
+                            <input type="text" id="pmAcudienteParentesco" class="field-input"
+                                placeholder="ej. Madre, Padre, Tutor">
                         </div>
                         <div class="field-group">
                             <label class="field-label">Lugar de expedición</label>
@@ -577,7 +736,8 @@
                     </div>
                     <div class="field-group">
                         <label class="field-label">Firma del acudiente</label>
-                        <div class="firma-upload-area firma-compact" onclick="document.getElementById('pmAcudienteFirmaFile').click()">
+                        <div class="firma-upload-area firma-compact"
+                            onclick="document.getElementById('pmAcudienteFirmaFile').click()">
                             <input type="file" id="pmAcudienteFirmaFile" accept="image/*" style="display:none"
                                 onchange="handlePmFirma('acudiente', this)">
                             <div class="firma-placeholder" id="pmAcudienteFirmaPlaceholder">
@@ -590,15 +750,47 @@
                 </div>
 
             </div>
-
-            </div>
             <div class="modal-footer">
                 <button class="btn btn-ghost" onclick="closePatientModal()">Cancelar</button>
-                <button class="btn btn-primary" id="pmSaveButton" onclick="savePatient()">💾 Crear y seleccionar</button>
+                <button class="btn btn-primary" id="pmSaveButton" onclick="savePatient()">💾 Crear y
+                    seleccionar</button>
             </div>
         </div>
     </div>
+        <!-- ══ MODAL: PLANTILLA (crear/editar) ═════════════════════════════════════ -->
+    <div class="modal-overlay hidden" id="plantillaModalOverlay" onclick="closePlantillaModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="plantillaModalTitle">Agregar Plantilla</h3>
+                <button class="modal-close" onclick="closePlantillaModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="plmModoOriginal">
+                <input type="hidden" id="plmCategoriaActual">
+                <input type="hidden" id="plmNombreActual">
 
+                <div class="field-group">
+                    <label class="field-label">Categoría <span class="req">*</span></label>
+                    <input type="text" id="plmCategoria" class="field-input" list="plmCategoriaList" placeholder="ej. Consulta, Cirugía...">
+                    <datalist id="plmCategoriaList"></datalist>
+                    <p class="field-hint">Escribe una categoría existente o una nueva — se crea automáticamente.</p>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Nombre de la plantilla <span class="req">*</span></label>
+                    <input type="text" id="plmNombre" class="field-input" placeholder="ej. CONSULTA VR3">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Archivo .docx <span class="req">*</span></label>
+                    <input type="file" id="plmFile" class="field-input" accept=".docx">
+                    <p class="field-hint" id="plmFileHint">Selecciona el archivo .docx de la plantilla</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closePlantillaModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="savePlantilla()">💾 Guardar</button>
+            </div>
+        </div>
+    </div>
     <!-- ══ TOAST ════════════════════════════════════════════════════════════════ -->
     <div class="toast-container" id="toastContainer"></div>
 
